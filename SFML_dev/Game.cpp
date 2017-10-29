@@ -229,9 +229,7 @@ namespace px
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
 		glEnableVertexAttribArray(0);
 
-		glm::mat4 model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.f, 5.f, 0.f));
-		Shader::SetMatrix4x4(Shaders::Debug, "model", model);
+		Shader::SetMatrix4x4(Shaders::Debug, "model", glm::mat4());
 		Shader::SetMatrix4x4(Shaders::Debug, "projection", m_camera->GetProjectionMatrix());
 		Shader::SetMatrix4x4(Shaders::Debug, "view", m_camera->GetViewMatrix());
 
@@ -494,7 +492,7 @@ namespace px
 
 			m_lastX = (float)xpos;
 			m_lastY = (float)ypos;
-
+			
 			m_camera->ProcessMouseMovement(window, xoffset, yoffset);
 		}
 	}
@@ -504,9 +502,14 @@ namespace px
 		//TODO: get the mouse coordinates for only the active window
 		if ((button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
 		{
+			//Width formula for new resize 
+			//(window_width - new_width) / 2
+			//Height formula (this is not absolute)
+			//(new_height / 8)
+
 			//Picking
 			if (m_hovered)
-				Picking::PerformMousePicking(m_camera, m_lastX, m_lastY);
+				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);
 		}
 	}
 
