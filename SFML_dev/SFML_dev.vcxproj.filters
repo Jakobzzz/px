@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{27dfb7be-844a-438a-b0b4-f9ffbe4d50a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{3ab5bdf2-58b1-49b2-9727-31905968e0d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{5402f8d6-44bf-472c-8a70-8d461fe6fc42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\Model Loading">
+      <UniqueIdentifier>{f9ff6b3d-9e93-4800-9094-d5fe2f24651c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\ImGui">
+      <UniqueIdentifier>{58258244-805e-4a75-8d24-76ad9430d311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Components">
+      <UniqueIdentifier>{f21a35b3-d887-4729-ba41-64fb932a4536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Systems">
+      <UniqueIdentifier>{66647c52-3084-45fc-bd56-42ebd0342c5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Component-Related">
+      <UniqueIdentifier>{7f0b10b9-0b89-4dc9-8589-9d98d0a6d414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\ImGui\Docking">
+      <UniqueIdentifier>{6a939479-390f-4245-8391-9db3a7488698}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shader.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glad\src\glad.c" />
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Utils\Model Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-master\imgui.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-master\imgui_draw.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_glfw_gl3.cpp">
+      <Filter>Utils\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Picking.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
+      <Filter>Graphics\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClCompile>
+    <ClCompile Include="Render.cpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClCompile>
+    <ClCompile Include="imguidock.cpp">
+      <Filter>Utils\ImGui\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTexture.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shader.hpp">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.hpp">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.hpp">
+      <Filter>Utils\Model Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.hpp">
+      <Filter>Utils\Model Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_glfw_gl3.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceIdentifiers.hpp">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderable.hpp">
+      <Filter>Graphics\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Picking.hpp">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.hpp">
+      <Filter>Graphics\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.hpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClInclude>
+    <ClInclude Include="Transformable.hpp">
+      <Filter>Graphics\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Render.hpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClInclude>
+    <ClInclude Include="imguidock.h">
+      <Filter>Utils\ImGui\Docking</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTexture.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="triangle.fragment">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="triangle.vertex">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="grid.vertex">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="grid.fragment">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
