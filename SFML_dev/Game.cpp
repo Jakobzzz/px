@@ -59,6 +59,9 @@ namespace px
 		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
 			entity.destroy();
 
+		glDeleteVertexArrays(1, &m_VAO);
+		glDeleteBuffers(1, &m_VBO);
+
 		m_models->Destroy(Models::Cube);
 		ImGui_ImplGlfwGL3_Shutdown();
 		glfwTerminate();
@@ -67,6 +70,7 @@ namespace px
 	void Game::LoadShaders()
 	{
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
+		Shader::LoadShaders(Shaders::Debug, "lineDebug.vertex", "lineDebug.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
 	}
 
@@ -91,6 +95,25 @@ namespace px
 
 		//Entites
 		InitEntities();
+
+		//Lines
+		m_lines.push_back({ glm::vec3(0.f, 0.f, 0.f) }); //Line start
+		m_lines.push_back({ glm::vec3(20.f, 0.f, 0.f) }); //Line end
+
+		glGenVertexArrays(1, &m_VAO);
+		glGenBuffers(1, &m_VBO);
+
+		glBindVertexArray(m_VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
+
+		//Positions
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 
 		//Lightning
 		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
@@ -191,6 +214,30 @@ namespace px
 
 		//Update systems
 		m_systems.update<RenderSystem>(dt);
+
+		//Render picking line
+		Shader::Use(Shaders::Debug);
+
+		glm::vec3 startPos = glm::vec3(-0.164f, 10.694f, 32.12f);
+		m_lines[0].position = startPos;
+		m_lines[1].position = startPos + Picking::GetPickingRay() * FAR_PLANE;
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
+
+		//Positions
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glm::mat4 model = glm::mat4();
+		model = glm::translate(model, glm::vec3(0.f, 5.f, 0.f));
+		Shader::SetMatrix4x4(Shaders::Debug, "model", model);
+		Shader::SetMatrix4x4(Shaders::Debug, "projection", m_camera->GetProjectionMatrix());
+		Shader::SetMatrix4x4(Shaders::Debug, "view", m_camera->GetViewMatrix());
+
+		glBindVertexArray(m_VAO);
+		glDrawArrays(GL_LINES, 0, m_lines.size());
+		glBindVertexArray(0);
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
@@ -457,8 +504,9 @@ namespace px
 		//TODO: get the mouse coordinates for only the active window
 		if ((button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
 		{
-			/*if (m_hovered)
-				m_pickedBody = Picking::PerformMousePicking(m_camera, m_lastX, m_lastY);*/ //Picking
+			//Picking
+			if (m_hovered)
+				Picking::PerformMousePicking(m_camera, m_lastX, m_lastY);
 		}
 	}
 

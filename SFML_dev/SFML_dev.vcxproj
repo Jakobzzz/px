@@ -192,6 +192,8 @@
   <ItemGroup>
     <None Include="grid.fragment" />
     <None Include="grid.vertex" />
+    <None Include="lineDebug.fragment" />
+    <None Include="lineDebug.vertex" />
     <None Include="triangle.fragment" />
     <None Include="triangle.vertex" />
   </ItemGroup>

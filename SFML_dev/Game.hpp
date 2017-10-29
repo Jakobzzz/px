@@ -92,6 +92,17 @@ namespace px
 		static float m_lastY;
 		static int m_newX;
 		static int m_newY;
+
+	private:
+		struct LineInfo
+		{
+			glm::vec3 position;
+		};
+
+		//Simple line
+		unsigned int m_VBO;
+		unsigned int m_VAO;
+		std::vector<LineInfo> m_lines;
 	};
 }
 
