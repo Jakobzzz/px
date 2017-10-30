@@ -15,8 +15,8 @@ namespace px
 	bool Game::m_showGrid = true;
 	bool Game::m_showFPS = false;
 	bool Game::m_showCameraPosition = true;
-	int Game::m_newX;
-	int Game::m_newY;
+	bool Game::m_picked = false;
+	glm::mat4 Game::m_cubeWorld;
 
 	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events), m_pickedName("Cube")
 	{
@@ -248,6 +248,17 @@ namespace px
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
+		//Perform OBB intersection test with picking ray
+		/*for (Entity entity : m_entities.entities_with_components(transform, renderable))
+		{
+			m_picked = Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), transform->transform->GetTransform());
+
+			if (m_picked)
+				std::cout << "Intersected " << renderable->object->GetName() << std::endl;
+			else
+				std::cout << "Didn't intersect" << std::endl;
+		}*/
+
 		//Check which entity was picked
 		//for (Entity entity : m_entities.entities_with_components(transform, renderable))
 		//{
@@ -279,6 +290,9 @@ namespace px
 				transform->transform->SetTransform(); //Apply transform to object to prevent world matrix from identity
 		}
 
+		ComponentHandle<Transformable> cubeTransform = m_cubeEntity.component<Transformable>();
+		m_cubeWorld = cubeTransform->transform->GetTransform();
+
 		if (m_hovered)
 			UpdateCamera(dt);
 	}
@@ -288,8 +302,6 @@ namespace px
 		ImVec2 size = ImGui::GetContentRegionAvail();
 		unsigned int width = m_frameBuffer->GetWidth();
 		unsigned int height = m_frameBuffer->GetHeight();
-		m_newX = size.x;
-		m_newY = size.y;
 
 		if (width != size.x || height != size.y)
 		{
@@ -499,7 +511,6 @@ namespace px
 
 	void Game::OnMouseButtonCallback(GLFWwindow * window, int button, int action, int mods)
 	{
-		//TODO: get the mouse coordinates for only the active window
 		if ((button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
 		{
 			//Width formula for new resize 
@@ -507,9 +518,17 @@ namespace px
 			//Height formula (this is not absolute)
 			//(new_height / 8)
 
-			//Picking
+			//Picking: project 2D-position to 3D
 			if (m_hovered)
+			{
 				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);
+				m_picked = Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_cubeWorld);
+
+				if (m_picked)
+					std::cout << "YES" << std::endl;
+				else
+					std::cout << "NO" << std::endl;
+			}
 		}
 	}
 

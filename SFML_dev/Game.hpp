@@ -52,6 +52,7 @@ namespace px
 
 		//Picking related
 		std::string m_pickedName;
+		
 
 	private:
 		float m_frameTime;
@@ -90,8 +91,8 @@ namespace px
 		//Callback variables
 		static float m_lastX;
 		static float m_lastY;
-		static int m_newX;
-		static int m_newY;
+		static bool m_picked;
+		static glm::mat4 m_cubeWorld;
 
 	private:
 		struct LineInfo

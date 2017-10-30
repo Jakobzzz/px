@@ -8,17 +8,19 @@
 namespace px
 {
 	class Camera;
-	//This picking is solely based on the fact that the graphical representation
-	//of the mesh has almost the same shape/size as the rigidbody of the object (which is why Bullet is used)
+
 	class Picking
 	{
 	public:
 		static void PerformMousePicking(std::shared_ptr<Camera> & camera, float x, float y);
+		static bool RaySphereIntersection(glm::mat4 modelMatrix, float radius);
+		static bool RayOBBIntersection(glm::vec3 aabb_min, glm::vec3 aabb_max, glm::mat4 modelMatrix);
 
 	public:
 		static glm::vec3 GetPickingRay();
 
 	private:
-		static glm::vec3 m_pickedRay;
+		static glm::vec3 m_direction;
+		static glm::vec3 m_origin;
 	};
 }
