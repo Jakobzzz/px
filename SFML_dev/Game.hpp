@@ -86,6 +86,7 @@ namespace px
 		glm::vec3 m_lightDirection;
 		float m_ambient;
 		float m_specular;
+		
 
 	private:
 		//Callback variables

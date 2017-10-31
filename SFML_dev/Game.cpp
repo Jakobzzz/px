@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "imguidock.h"
 #include "imgui_impl_glfw_gl3.h"
+#include "imgui_log.h"
 
 #include <assert.h>
 #include <iostream>
@@ -464,7 +465,7 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Bottom);
 			if (ImGui::BeginDock("Log"))
 			{
-
+				consoleLog.Draw();
 			}
 			ImGui::EndDock();
 
@@ -528,9 +529,9 @@ namespace px
 				m_picked = Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_cubeWorld);
 
 				if (m_picked)
-					std::cout << "YES" << std::endl;
+					consoleLog.Print("Picked\n");
 				else
-					std::cout << "NO" << std::endl;
+					consoleLog.Print("Didn't pick\n");
 			}
 		}
 	}
