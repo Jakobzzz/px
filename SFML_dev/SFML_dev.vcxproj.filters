@@ -32,6 +32,9 @@
     <Filter Include="Utils\ImGui\Docking">
       <UniqueIdentifier>{6a939479-390f-4245-8391-9db3a7488698}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\Debug">
+      <UniqueIdentifier>{1bfc8a74-1ba2-4fdb-90aa-cb1987ddae11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

@@ -59,8 +59,8 @@ namespace px
 		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
 			entity.destroy();
 
-		glDeleteVertexArrays(1, &m_VAO);
-		glDeleteBuffers(1, &m_VBO);
+		/*glDeleteVertexArrays(1, &m_VAO);
+		glDeleteBuffers(1, &m_VBO);*/
 
 		m_models->Destroy(Models::Cube);
 		ImGui_ImplGlfwGL3_Shutdown();
@@ -97,23 +97,23 @@ namespace px
 		InitEntities();
 
 		//Lines
-		m_lines.push_back({ glm::vec3(0.f, 0.f, 0.f) }); //Line start
-		m_lines.push_back({ glm::vec3(20.f, 0.f, 0.f) }); //Line end
+		//m_lines.push_back({ glm::vec3(0.f, 0.f, 0.f) }); //Line start
+		//m_lines.push_back({ glm::vec3(20.f, 0.f, 0.f) }); //Line end
 
-		glGenVertexArrays(1, &m_VAO);
-		glGenBuffers(1, &m_VBO);
+		//glGenVertexArrays(1, &m_VAO);
+		//glGenBuffers(1, &m_VBO);
 
-		glBindVertexArray(m_VAO);
+		//glBindVertexArray(m_VAO);
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		//glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
 
-		//Positions
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
-		glEnableVertexAttribArray(0);
+		////Positions
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
+		//glEnableVertexAttribArray(0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindVertexArray(0);
 
 		//Lightning
 		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
@@ -216,26 +216,26 @@ namespace px
 		m_systems.update<RenderSystem>(dt);
 
 		//Render picking line
-		Shader::Use(Shaders::Debug);
+		//Shader::Use(Shaders::Debug);
 
-		glm::vec3 startPos = glm::vec3(-0.164f, 10.694f, 32.12f);
-		m_lines[0].position = startPos;
-		m_lines[1].position = startPos + Picking::GetPickingRay() * FAR_PLANE;
+		//glm::vec3 startPos = glm::vec3(-0.164f, 10.694f, 32.12f);
+		//m_lines[0].position = startPos;
+		//m_lines[1].position = startPos + Picking::GetPickingRay() * FAR_PLANE;
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		//glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
 
-		//Positions
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
-		glEnableVertexAttribArray(0);
+		////Positions
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
+		//glEnableVertexAttribArray(0);
 
-		Shader::SetMatrix4x4(Shaders::Debug, "model", glm::mat4());
-		Shader::SetMatrix4x4(Shaders::Debug, "projection", m_camera->GetProjectionMatrix());
-		Shader::SetMatrix4x4(Shaders::Debug, "view", m_camera->GetViewMatrix());
+		//Shader::SetMatrix4x4(Shaders::Debug, "model", glm::mat4());
+		//Shader::SetMatrix4x4(Shaders::Debug, "projection", m_camera->GetProjectionMatrix());
+		//Shader::SetMatrix4x4(Shaders::Debug, "view", m_camera->GetViewMatrix());
 
-		glBindVertexArray(m_VAO);
-		glDrawArrays(GL_LINES, 0, m_lines.size());
-		glBindVertexArray(0);
+		//glBindVertexArray(m_VAO);
+		//glDrawArrays(GL_LINES, 0, m_lines.size());
+		//glBindVertexArray(0);
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
@@ -435,19 +435,22 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Tab);
 			if (ImGui::BeginDock("Inspector"))
 			{
-				std::string info = "Entity: " + m_pickedName;
-				ImGui::Text(info.c_str());
-				ImGui::Spacing();
-
-				ImGui::SetNextTreeNodeOpen(true, 2);
-				if (ImGui::CollapsingHeader("Transform"))
+				if (m_picked)
 				{
+					std::string info = "Entity: " + m_pickedName;
+					ImGui::Text(info.c_str());
 					ImGui::Spacing();
-					ImGui::InputFloat3("Position", (float*)&m_position, floatPrecision);
-					ImGui::Spacing();
-					ImGui::InputFloat3("Rotation", (float*)&m_rotationAngles, floatPrecision);
-					ImGui::Spacing();
-					ImGui::InputFloat3("Scale", (float*)&m_scale, floatPrecision);
+
+					ImGui::SetNextTreeNodeOpen(true, 2);
+					if (ImGui::CollapsingHeader("Transform"))
+					{
+						ImGui::Spacing();
+						ImGui::InputFloat3("Position", (float*)&m_position, floatPrecision);
+						ImGui::Spacing();
+						ImGui::InputFloat3("Rotation", (float*)&m_rotationAngles, floatPrecision);
+						ImGui::Spacing();
+						ImGui::InputFloat3("Scale", (float*)&m_scale, floatPrecision);
+					}
 				}
 			}
 			ImGui::EndDock();
