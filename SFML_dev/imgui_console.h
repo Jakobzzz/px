@@ -25,7 +25,7 @@ struct AppConsole
 		Commands.push_back("HISTORY");
 		Commands.push_back("CLEAR");
 		Commands.push_back("CLASSIFY");  // "classify" is here to provide an example of "C"+[tab] completing to "CL" and displaying matches.
-		AddLog("Welcome to ImGui!");
+		AddLog("Welcome to Pixel Engine!");
 	}
 	~AppConsole()
 	{
@@ -45,6 +45,11 @@ struct AppConsole
 			free(Items[i]);
 		Items.clear();
 		ScrollToBottom = true;
+	}
+
+	void AddCommand(const char* command)
+	{
+		Commands.push_back(command);
 	}
 
 	void    AddLog(const char* fmt, ...) IM_FMTARGS(2)
@@ -97,7 +102,8 @@ struct AppConsole
 		}
 
 		// Demonstrate keeping auto focus on the input box
-		if (ImGui::IsItemHovered() || (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+		//TODO: fix so this is suitable...
+		if (ImGui::IsItemClicked())
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 	}
 
