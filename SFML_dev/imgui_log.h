@@ -59,4 +59,4 @@ struct AppLog
 	}
 };
 
-static AppLog consoleLog;
+static AppLog gameLog;

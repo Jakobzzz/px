@@ -134,6 +134,9 @@
     <ClInclude Include="imgui_log.h">
       <Filter>Utils\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="imgui_console.h">
+      <Filter>Utils\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="triangle.fragment">
