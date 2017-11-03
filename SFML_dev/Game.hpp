@@ -6,6 +6,7 @@
 #include "Grid.hpp"
 #include <entityx\entityx.h>
 #include "RenderTexture.hpp"
+#include <sol.hpp>
 
 //Systems
 #include "RenderSystem.hpp"

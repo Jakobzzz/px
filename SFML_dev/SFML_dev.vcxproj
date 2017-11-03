@@ -73,8 +73,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,8 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -133,7 +133,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
