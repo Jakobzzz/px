@@ -19,6 +19,7 @@ namespace px
 	bool Game::m_showCameraPosition = true;
 	bool Game::m_picked = false;
 	glm::mat4 Game::m_cubeWorld;
+	Entity Game::m_cubeEntity;
 
 	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events), m_pickedName("Cube")
 	{
@@ -54,6 +55,9 @@ namespace px
 		glEnable(GL_MULTISAMPLE);
 
 		InitScene();
+
+		//Test lua 
+		gameConsole.lua.set_function("GetPosition", GetPosition);
 	}
 
 	Game::~Game()
@@ -568,5 +572,12 @@ namespace px
 				m_camera->SetFov(fov);
 			}
 		}
+	}
+
+	void Game::GetPosition()
+	{
+		ComponentHandle<Transformable> transform = m_cubeEntity.component<Transformable>();
+		glm::vec3 position = transform->transform->GetPosition();
+		gameConsole.AddLog("Position: %f\n", position.x);
 	}
 }

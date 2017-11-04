@@ -4,6 +4,7 @@
 #include <stdio.h>          // vsnprintf, sscanf, printf
 #include <stdlib.h>         // NULL, malloc, free, atoi
 #include <ctype.h>          // toupper, isprint
+#include <sol.hpp>
 
 #define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
@@ -15,9 +16,12 @@ struct AppConsole
 	ImVector<char*>       History;
 	int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
 	ImVector<const char*> Commands;
+	sol::state lua;
 
 	AppConsole()
 	{
+		lua.open_libraries(sol::lib::base);
+
 		ClearLog();
 		memset(InputBuf, 0, sizeof(InputBuf));
 		HistoryPos = -1;
@@ -25,7 +29,6 @@ struct AppConsole
 		Commands.push_back("HISTORY");
 		Commands.push_back("CLEAR");
 		Commands.push_back("CLASSIFY");  // "classify" is here to provide an example of "C"+[tab] completing to "CL" and displaying matches.
-		AddLog("Welcome to Pixel Engine!");
 	}
 	~AppConsole()
 	{
@@ -82,7 +85,7 @@ struct AppConsole
 		{
 			const char* item = Items[i];
 			ImVec4 col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // A better implementation may store a type per-item. For the sample let's just parse the text.;
-			if (strncmp(item, "# ", 2) == 0) col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
+			if (strncmp(item, "> ", 2) == 0) col = ImColor(0.f, 0.74f, 0.2f, 1.0f);
 			ImGui::PushStyleColor(ImGuiCol_Text, col);
 			ImGui::TextUnformatted(item);
 			ImGui::PopStyleColor();
@@ -92,7 +95,7 @@ struct AppConsole
 		ImGui::Separator();
 
 		// Command-line
-		if (ImGui::InputText("", InputBuf, IM_ARRAYSIZE(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
+		if (ImGui::InputText("Input (Lua)", InputBuf, IM_ARRAYSIZE(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
 		{
 			char* input_end = InputBuf + strlen(InputBuf);
 			while (input_end > InputBuf && input_end[-1] == ' ') input_end--; *input_end = 0;
@@ -109,7 +112,8 @@ struct AppConsole
 
 	void    ExecCommand(const char* command_line)
 	{
-		AddLog("# %s\n", command_line);
+		AddLog("> %s\n", command_line);
+		lua.do_string(command_line); //Check the lua stack
 
 		// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
 		HistoryPos = -1;
@@ -137,10 +141,6 @@ struct AppConsole
 		{
 			for (int i = History.Size >= 10 ? History.Size - 10 : 0; i < History.Size; i++)
 				AddLog("%3d: %s\n", i, History[i]);
-		}
-		else
-		{
-			AddLog("Unknown command: '%s'\n", command_line);
 		}
 	}
 

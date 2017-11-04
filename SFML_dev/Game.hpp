@@ -6,7 +6,6 @@
 #include "Grid.hpp"
 #include <entityx\entityx.h>
 #include "RenderTexture.hpp"
-#include <sol.hpp>
 
 //Systems
 #include "RenderSystem.hpp"
@@ -69,13 +68,17 @@ namespace px
 		ModelHolder m_models;
 
 	private:
-		Entity m_cubeEntity;
+		static Entity m_cubeEntity;
 		Entity m_planeEntity;
 		glm::vec3 m_rotationAngles;
 		glm::vec3 m_position;
 		glm::vec3 m_scale;
 		float m_colors[3];
 		bool* m_open;
+
+	private:
+		//Lua functions
+		static void GetPosition();
 
 	private:
 		static bool m_showGrid;
