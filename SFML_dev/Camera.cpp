@@ -60,6 +60,11 @@ namespace px
 			m_firstMouse = true;
 	}
 
+	void Camera::SetPosition(glm::vec3 position)
+	{
+		m_position = position;
+	}
+
 	void Camera::SetFov(float fov)
 	{
 		m_fov = fov;

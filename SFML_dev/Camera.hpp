@@ -39,6 +39,7 @@ namespace px
 		void ProcessMouseMovement(GLFWwindow* window, float xOffset, float yOffset); 
 
 	public:
+		void SetPosition(glm::vec3 position);
 		void SetFov(float fov);
 		void SetWidth(unsigned int width);
 		void SetHeight(unsigned int height);

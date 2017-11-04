@@ -56,8 +56,8 @@ namespace px
 
 		InitScene();
 
-		//Test lua 
-		gameConsole.lua.set_function("GetPosition", GetPosition);
+		//Lua functions
+		gameConsole.lua.set_function("SetCamera", SetCamera);
 	}
 
 	Game::~Game()
@@ -574,10 +574,9 @@ namespace px
 		}
 	}
 
-	void Game::GetPosition()
+	//Lua functions
+	void Game::SetCamera(float x, float y, float z)
 	{
-		ComponentHandle<Transformable> transform = m_cubeEntity.component<Transformable>();
-		glm::vec3 position = transform->transform->GetPosition();
-		gameConsole.AddLog("Position: %f\n", position.x);
+		m_camera->SetPosition(glm::vec3(x, y, z));
 	}
 }

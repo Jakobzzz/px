@@ -77,13 +77,13 @@ namespace px
 		bool* m_open;
 
 	private:
-		//Lua functions
-		static void GetPosition();
-
-	private:
 		static bool m_showGrid;
 		static bool m_showFPS;
 		static bool m_showCameraPosition;
+
+	private:
+		//Lua functions
+		static void SetCamera(float x, float y, float z);
 
 	private:
 		//Lightning variables
