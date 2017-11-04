@@ -18,10 +18,14 @@ namespace px
 	bool Game::m_showFPS = false;
 	bool Game::m_showCameraPosition = true;
 	bool Game::m_picked = false;
-	glm::mat4 Game::m_cubeWorld;
+	glm::vec3 Game::m_rotationAngles;
+	glm::vec3 Game::m_position;
+	glm::vec3 Game::m_scale;
+	std::string Game::m_pickedName = "Cube";
+	std::vector<Game::PickingInfo> Game::m_entityPicked;
 	Entity Game::m_cubeEntity;
 
-	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events), m_pickedName("Cube")
+	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -57,7 +61,8 @@ namespace px
 		InitScene();
 
 		//Lua functions
-		gameConsole.lua.set_function("SetCamera", SetCamera);
+		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_camera->SetPosition(glm::vec3(x, y, z)); });
+		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
 	}
 
 	Game::~Game()
@@ -158,9 +163,9 @@ namespace px
 		m_planeEntity = m_entities.create();
 
 		auto planeTransform = std::make_unique<Transform>();
-		planeTransform->SetScale(glm::vec3(10.f, 0.1f, 10.f));
+		planeTransform->SetPosition(glm::vec3(0.f, 2.f, 0.f));
 
-		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Plane");
+		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "SecondCube");
 
 		m_planeEntity.assign<Transformable>(planeTransform);
 		m_planeEntity.assign<Renderable>(plane);
@@ -254,50 +259,28 @@ namespace px
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
-		//Perform OBB intersection test with picking ray
-		/*for (Entity entity : m_entities.entities_with_components(transform, renderable))
-		{
-			m_picked = Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), transform->transform->GetTransform());
-
-			if (m_picked)
-				std::cout << "Intersected " << renderable->object->GetName() << std::endl;
-			else
-				std::cout << "Didn't intersect" << std::endl;
-		}*/
-
-		//Check which entity was picked
-		//for (Entity entity : m_entities.entities_with_components(transform, renderable))
-		//{
-		//	if (m_pickedBody == rigidBody->body->GetRigidBody().get())
-		//	{
-		//		m_pickedName = renderable->object->GetName();
-		//		std::cout << renderable->object->GetName() << std::endl;
-
-		//		//Give information to GUI about object
-		//		m_scale = transform->transform->GetScale();
-		//		m_position = transform->transform->GetPosition();
-		//		m_rotationAngles = transform->transform->GetRotationAngles();
-
-		//		m_rigidbodySize = rigidBody->body->GetSize();
-		//	}
-		//}
-
-		//Set transformation for the picked object
-		for (Entity entity : m_entities.entities_with_components(transform, renderable))
+		//Update entities transformation
+		int i = 0;
+		m_entityPicked.resize(m_entities.size());
+		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
 		{
 			if (m_pickedName == renderable->object->GetName())
 			{
-				//Object
+				//Set transform from GUI with picked object
 				transform->transform->SetPosition(m_position);
 				transform->transform->SetRotationOnAllAxis(m_rotationAngles);
 				transform->transform->SetScale(m_scale);
 			}
 			else
-				transform->transform->SetTransform(); //Apply transform to object to prevent world matrix from identity
-		}
+				transform->transform->SetTransform();
 
-		ComponentHandle<Transformable> cubeTransform = m_cubeEntity.component<Transformable>();
-		m_cubeWorld = cubeTransform->transform->GetTransform();
+			m_entityPicked[i].position = transform->transform->GetPosition();
+			m_entityPicked[i].rotationAngles = transform->transform->GetRotationAngles();
+			m_entityPicked[i].scale = transform->transform->GetScale();
+			m_entityPicked[i].world = transform->transform->GetTransform();
+			m_entityPicked[i].name = renderable->object->GetName();
+			i++;
+		}
 
 		if (m_hovered)
 			UpdateCamera(dt);
@@ -538,12 +521,23 @@ namespace px
 			if (m_hovered)
 			{
 				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);
-				m_picked = Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_cubeWorld);
 
-				if (m_picked)
-					gameLog.Print("Picked\n");
-				else
-					gameLog.Print("Didn't pick\n");
+				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+				{
+					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_entityPicked[i].world))
+					{
+						//Give information to GUI about picked object
+						m_pickedName = m_entityPicked[i].name;
+						m_scale = m_entityPicked[i].scale;
+						m_position = m_entityPicked[i].position;
+						m_rotationAngles = m_entityPicked[i].rotationAngles;
+						m_picked = true;
+						gameLog.Print("Picked\n");
+						break;
+					}
+					else
+						m_picked = false;
+				}
 			}
 		}
 	}
@@ -572,11 +566,5 @@ namespace px
 				m_camera->SetFov(fov);
 			}
 		}
-	}
-
-	//Lua functions
-	void Game::SetCamera(float x, float y, float z)
-	{
-		m_camera->SetPosition(glm::vec3(x, y, z));
 	}
 }

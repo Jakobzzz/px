@@ -51,7 +51,7 @@ namespace px
 		static std::shared_ptr<Camera> m_camera;
 
 		//Picking related
-		std::string m_pickedName;
+		static std::string m_pickedName;
 		
 
 	private:
@@ -70,9 +70,9 @@ namespace px
 	private:
 		static Entity m_cubeEntity;
 		Entity m_planeEntity;
-		glm::vec3 m_rotationAngles;
-		glm::vec3 m_position;
-		glm::vec3 m_scale;
+		static glm::vec3 m_rotationAngles;
+		static glm::vec3 m_position;
+		static glm::vec3 m_scale;
 		float m_colors[3];
 		bool* m_open;
 
@@ -82,22 +82,27 @@ namespace px
 		static bool m_showCameraPosition;
 
 	private:
-		//Lua functions
-		static void SetCamera(float x, float y, float z);
-
-	private:
 		//Lightning variables
 		glm::vec3 m_lightDirection;
 		float m_ambient;
 		float m_specular;
-		
+
+	private:
+		struct PickingInfo
+		{
+			glm::mat4 world;
+			glm::vec3 position;
+			glm::vec3 rotationAngles;
+			glm::vec3 scale;
+			std::string name;
+		};
 
 	private:
 		//Callback variables
 		static float m_lastX;
 		static float m_lastY;
 		static bool m_picked;
-		static glm::mat4 m_cubeWorld;
+		static std::vector<PickingInfo> m_entityPicked;
 
 	private:
 		struct LineInfo
