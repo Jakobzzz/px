@@ -40,52 +40,15 @@ namespace px
 		void InitEntities();
 		void UpdateGUI(double dt);
 		void UpdateCamera(float dt);
+		glm::vec3 FromVec3Json(std::vector<float> values);
+		std::vector<float> ToVec3Json(glm::vec3 values);
+		void WriteSceneData();
 
 	private:
 		static void OnFrameBufferResizeCallback(GLFWwindow* window, int width, int height);
 		static void OnMouseCallback(GLFWwindow* window, double xpos, double ypos);
 		static void OnMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 		static void OnMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-
-	private:
-		static std::shared_ptr<Camera> m_camera;
-
-		//Picking related
-		static std::string m_pickedName;
-		
-
-	private:
-		float m_frameTime;
-		GLFWwindow* m_window;
-		std::unique_ptr<Grid> m_grid;
-		std::unique_ptr<RenderTexture> m_frameBuffer;
-		static bool m_hovered;
-
-	private:
-		EntityManager m_entities;
-		EventManager m_events;
-		SystemManager m_systems;
-		ModelHolder m_models;
-
-	private:
-		static Entity m_cubeEntity;
-		Entity m_planeEntity;
-		static glm::vec3 m_rotationAngles;
-		static glm::vec3 m_position;
-		static glm::vec3 m_scale;
-		float m_colors[3];
-		bool* m_open;
-
-	private:
-		static bool m_showGrid;
-		static bool m_showFPS;
-		static bool m_showCameraPosition;
-
-	private:
-		//Lightning variables
-		glm::vec3 m_lightDirection;
-		float m_ambient;
-		float m_specular;
 
 	private:
 		struct PickingInfo
@@ -98,11 +61,41 @@ namespace px
 		};
 
 	private:
-		//Callback variables
+		static std::vector<PickingInfo> m_entityPicked;
+		static std::shared_ptr<Camera> m_camera;
+		static std::string m_pickedName;
 		static float m_lastX;
 		static float m_lastY;
 		static bool m_picked;
-		static std::vector<PickingInfo> m_entityPicked;
+		static bool m_showGrid;
+		static bool m_showFPS;
+		static bool m_showCameraPosition;
+		static bool m_hovered;
+		static glm::vec3 m_rotationAngles;
+		static glm::vec3 m_position;
+		static glm::vec3 m_scale;
+		
+	private:
+		bool* m_open;
+		float m_frameTime;
+		GLFWwindow* m_window;
+		std::unique_ptr<Grid> m_grid;
+		std::unique_ptr<RenderTexture> m_frameBuffer;
+		ModelHolder m_models;
+
+	private:
+		//Entities
+		Entity m_cubeEntity;
+		Entity m_planeEntity;
+		EntityManager m_entities;
+		EventManager m_events;
+		SystemManager m_systems;
+
+	private:
+		//Lightning variables
+		glm::vec3 m_lightDirection;
+		float m_ambient;
+		float m_specular;		
 
 	private:
 		struct LineInfo

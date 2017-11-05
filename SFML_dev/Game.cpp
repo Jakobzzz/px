@@ -7,6 +7,10 @@
 #include <assert.h>
 #include <iostream>
 #include <functional>
+#include <json.hpp>
+#include <fstream>
+
+using json = nlohmann::json;
 
 namespace px
 {
@@ -21,9 +25,8 @@ namespace px
 	glm::vec3 Game::m_rotationAngles;
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
-	std::string Game::m_pickedName = "Cube";
+	std::string Game::m_pickedName;
 	std::vector<Game::PickingInfo> Game::m_entityPicked;
-	Entity Game::m_cubeEntity;
 
 	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events)
 	{
@@ -41,18 +44,15 @@ namespace px
 
 		assert(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress));
 
-		//Callbacks should be placed after ImGUI is init to work properly
-		//glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		//Make sure ImGui doesn't already have the callbacks when adding new ones
 		glfwSetFramebufferSizeCallback(m_window, OnFrameBufferResizeCallback);
 		glfwSetCursorPosCallback(m_window, OnMouseCallback);
 
-		//ImGUI
+		//ImGUI initialize
 		InitImGuiStyle(true, 0.5f);
 		ImGui_ImplGlfwGL3_Init(m_window, true);
 
 		//Override imgui mouse button callback
-		//No issues so far...
-		//glfwSetScrollCallback(m_window, OnMouseScrollCallback); //Use this when the render to texture works?
 		glfwSetMouseButtonCallback(m_window, OnMouseButtonCallback);
 
 		glEnable(GL_DEPTH_TEST);
@@ -69,6 +69,8 @@ namespace px
 	{
 		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
 			entity.destroy();
+
+		WriteSceneData();
 
 		/*glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);*/
@@ -93,19 +95,17 @@ namespace px
 
 	void Game::InitScene()
 	{
-		m_camera = std::make_shared<Camera>(glm::vec3(-0.164f, 10.694f, 32.12f));
-
 		LoadShaders();
 		LoadModels();
 
 		//Render textures
 		m_frameBuffer = std::make_unique<RenderTexture>();
 
-		//Grid
-		m_grid = std::make_unique<Grid>(m_camera);
-
 		//Entites
 		InitEntities();
+
+		//Grid
+		m_grid = std::make_unique<Grid>(m_camera);
 
 		//Lines
 		//m_lines.push_back({ glm::vec3(0.f, 0.f, 0.f) }); //Line start
@@ -131,11 +131,6 @@ namespace px
 		m_ambient = 0.3f;
 		m_specular = 0.2f;
 
-		//Colors
-		m_colors[0] = 0.274f;
-		m_colors[1] = 0.227f;
-		m_colors[2] = 0.227f;
-
 		//Systems
 		m_systems.add<RenderSystem>();
 		m_systems.configure();
@@ -143,30 +138,33 @@ namespace px
 
 	void Game::InitEntities()
 	{
+		//Read values from scene json file
+		std::ifstream i("Scripts/Json/scene.json");
+		json reader; i >> reader; i.close();
+
+		//Camera
+		glm::vec3 cameraPos = FromVec3Json(reader["Camera"]["position"]);
+		m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
+
 		//*** CUBE ENTITY ***
 		m_cubeEntity = m_entities.create();
-
 		auto cubeTransform = std::make_unique<Transform>();
-		cubeTransform->SetPosition(glm::vec3(0.f, 10.f, 0.f));
+		cubeTransform->SetPosition(FromVec3Json(reader["Cube"]["position"]));
+		cubeTransform->SetRotationOnAllAxis(FromVec3Json(reader["Cube"]["rotation"]));
+		cubeTransform->SetScale(FromVec3Json(reader["Cube"]["scale"]));
 
 		auto cube = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Cube");
-
-		//Init tweaking variables for cube object
-		m_scale = cubeTransform->GetScale();
-		m_position = cubeTransform->GetPosition();
-		m_rotationAngles = cubeTransform->GetRotationAngles();
-
 		m_cubeEntity.assign<Transformable>(cubeTransform);
 		m_cubeEntity.assign<Renderable>(cube);
 
-		//*** PLANE ENTITY ***
+		//*** PLANE ENTITY (second cube) ***
 		m_planeEntity = m_entities.create();
-
 		auto planeTransform = std::make_unique<Transform>();
-		planeTransform->SetPosition(glm::vec3(0.f, 2.f, 0.f));
+		planeTransform->SetPosition(FromVec3Json(reader["SecondCube"]["position"]));
+		planeTransform->SetRotationOnAllAxis(FromVec3Json(reader["SecondCube"]["rotation"]));
+		planeTransform->SetScale(FromVec3Json(reader["SecondCube"]["scale"]));
 
 		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "SecondCube");
-
 		m_planeEntity.assign<Transformable>(planeTransform);
 		m_planeEntity.assign<Renderable>(plane);
 	}
@@ -208,7 +206,7 @@ namespace px
 	{
 		//Draw scene as normally to a color texture
 		m_frameBuffer->BindFrameBuffer(); 
-		glClearColor(m_colors[0], m_colors[1], m_colors[2], 1.f);
+		glClearColor(0.274f, 0.227f, 0.227f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		if(m_showGrid)
@@ -355,7 +353,8 @@ namespace px
 		if (m_showCameraPosition)
 		{
 			ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 215, WINDOW_HEIGHT - 480));
-			if (!ImGui::Begin("Camera overlay", &m_showCameraPosition, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+			if (!ImGui::Begin("Camera overlay", &m_showCameraPosition, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+																						   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				ImGui::End();
 				return;
@@ -380,7 +379,7 @@ namespace px
 			ImGui::End();
 		}
 
-		//Docking tabs
+		//Docking system
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 		const ImGuiWindowFlags flags = (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | 
 										ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | 
@@ -403,10 +402,7 @@ namespace px
 
 			ImGui::SetNextDock(ImGuiDockSlot_Bottom);
 			if (ImGui::BeginDock("Debug"))
-			{
-				/*ImGui::Spacing();
-				ImGui::ColorEdit3("Color", m_colors);*/
-				
+			{				
 				ImGui::Spacing();
 				if (ImGui::CollapsingHeader("Directional Light"))
 				{
@@ -447,7 +443,6 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Entities"))
 			{
-				// left
 				static int selected = 0;
 				ImGui::BeginChild("Hierachy");
 				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
@@ -467,62 +462,6 @@ namespace px
 					}
 				}
 				ImGui::EndChild();
-				ImGui::SameLine();
-
-				// right
-				//ImGui::BeginGroup();
-				//ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing())); // Leave room for 1 line below us
-				//ImGui::Text("MyObject: %d", selected);
-				//ImGui::Separator();
-				//ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ");
-				//ImGui::EndChild();
-				//ImGui::BeginChild("buttons");
-				//if (ImGui::Button("Revert")) {}
-				//ImGui::SameLine();
-				//if (ImGui::Button("Save")) {}
-				//ImGui::EndChild();
-				//ImGui::EndGroup();
-
-				//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
-
-				//struct funcs
-				//{
-				//	static void ShowDummyObject(const char* prefix, int uid)
-				//	{
-				//		ImGui::PushID(uid);                      // Use object uid as identifier. Most commonly you could also use the object pointer as a base ID.
-				//		ImGui::AlignFirstTextHeightToWidgets();  // Text and Tree nodes are less high than regular widgets, here we add vertical spacing to make the tree lines equal high.
-				//		bool node_open = ImGui::TreeNode("Object", "%s_%u", prefix, uid);
-
-				//		if (node_open)
-				//		{
-				//			//Dummy children
-				//			//for (int i = 0; i < 2; i++)
-				//			//{
-				//			//	ImGui::PushID(i); // Use field index as identifier.		
-				//			//	ImGui::AlignFirstTextHeightToWidgets();
-
-				//			//	// Here we use a Selectable (instead of Text) to highlight on hover
-				//			//	//ImGui::Text("Field_%d", i);
-				//			//	char label[32];
-				//			//	sprintf(label, "Field_%d", i);
-				//			//	ImGui::Bullet();
-				//			//	ImGui::Selectable(label);
-				//			//	ImGui::NextColumn();
-				//			//	ImGui::PushItemWidth(-1);
-				//			//	ImGui::PopItemWidth();
-				//			//	ImGui::NextColumn();
-				//			//	
-				//			//	ImGui::PopID();
-				//			//}
-				//			ImGui::TreePop();
-				//		}
-				//		ImGui::PopID();
-				//	}
-				//};
-
-				//// Iterate dummy objects with dummy members (all the same data)
-				//funcs::ShowDummyObject("Object", 0);
-				//ImGui::PopStyleVar();
 			}
 			ImGui::EndDock();
 
@@ -558,6 +497,38 @@ namespace px
 			m_camera->ProcessKeyboard(LEFT, dt);
 	}
 
+	//Helper functions for reading/writing json files
+	glm::vec3 Game::FromVec3Json(std::vector<float> values)
+	{
+		glm::vec3 result = { values[0], values[1], values[2] };
+		return result;
+	}
+
+	std::vector<float> Game::ToVec3Json(glm::vec3 values)
+	{
+		std::vector<float> result = { values[0], values[1], values[2] };
+		return result;
+	}
+
+	void Game::WriteSceneData()
+	{
+		//Write scene information to json file
+		json data;
+		data["Camera"]["position"] = ToVec3Json(m_camera->GetPosition());
+		data["Camera"]["yaw"] = m_camera->GetYaw();
+		data["Camera"]["pitch"] = m_camera->GetPitch();
+
+		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+		{
+			data[m_entityPicked[i].name]["position"] = ToVec3Json(m_entityPicked[i].position);
+			data[m_entityPicked[i].name]["rotation"] = ToVec3Json(m_entityPicked[i].rotationAngles);
+			data[m_entityPicked[i].name]["scale"] = ToVec3Json(m_entityPicked[i].scale);
+		}
+
+		std::ofstream o("Scripts/Json/scene.json");
+		o << std::setw(3) << data << std::endl;
+	}
+
 	//*** Callbacks ***
 	void Game::OnFrameBufferResizeCallback(GLFWwindow * window, int width, int height)
 	{
@@ -590,10 +561,10 @@ namespace px
 		{
 			//Width formula for new resize 
 			//(window_width - new_width) / 2
-			//Height formula (this is not absolute)
+			//Height formula (approximation)
 			//(new_height / 8)
 
-			//Picking: project 2D-position to 3D
+			//Picking: project 2D-position to 3D and check intersection with OBB
 			if (m_hovered)
 			{
 				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);

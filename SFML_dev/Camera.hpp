@@ -31,8 +31,7 @@ namespace px
 	class Camera
 	{
 	public:
-		Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
-		Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+		Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 
 	public:
 		void ProcessKeyboard(Camera_Movement direction, float dt);
@@ -49,8 +48,11 @@ namespace px
 		glm::mat4 GetViewMatrix() const;
 		glm::vec3 GetPosition() const;
 		glm::vec3 GetTarget() const;
+		glm::vec3 GetFront() const;
 		glm::vec3 GetUp() const;
 		float GetFov() const;
+		float GetYaw() const;
+		float GetPitch() const;
 		unsigned int GetWidth() const;
 		unsigned int GetHeight() const;
 		bool GetFirstMouse() const;

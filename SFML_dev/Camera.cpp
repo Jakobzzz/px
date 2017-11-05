@@ -3,21 +3,10 @@
 
 namespace px
 {
-	Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : m_front(glm::vec3(0.0f, 0.0f, -1.0f)), m_movementSpeed(SPEED),
-		m_mouseSensitivity(SENSITIVTY), m_fov(FOV), m_width(WINDOW_WIDTH), m_height(WINDOW_HEIGHT), m_firstMouse(true)
+	Camera::Camera(glm::vec3 position, float yaw, float pitch) : m_front(glm::vec3(0.0f, 0.0f, -1.0f)), m_movementSpeed(SPEED),
+		m_mouseSensitivity(SENSITIVTY), m_fov(FOV), m_width(WINDOW_WIDTH), m_height(WINDOW_HEIGHT), m_firstMouse(true), m_worldUp(0.0f, 1.0f, 0.0f)
 	{
 		m_position = position;
-		m_worldUp = up;
-		m_yaw = yaw;
-		m_pitch = pitch;
-		UpdateCameraVectors();
-	}
-
-	Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
-		m_movementSpeed(SPEED), m_mouseSensitivity(SENSITIVTY), m_fov(FOV), m_width(WINDOW_WIDTH), m_height(WINDOW_HEIGHT), m_firstMouse(true)
-	{
-		m_position = glm::vec3(posX, posY, posZ);
-		m_worldUp = glm::vec3(upX, upY, upZ);
 		m_yaw = yaw;
 		m_pitch = pitch;
 		UpdateCameraVectors();
@@ -114,6 +103,11 @@ namespace px
 		return m_position + m_front;
 	}
 
+	glm::vec3 Camera::GetFront() const
+	{
+		return m_front;
+	}
+
 	glm::vec3 Camera::GetUp() const
 	{
 		return m_up;
@@ -122,6 +116,16 @@ namespace px
 	float Camera::GetFov() const
 	{
 		return m_fov;
+	}
+
+	float Camera::GetYaw() const
+	{
+		return m_yaw;
+	}
+
+	float Camera::GetPitch() const
+	{
+		return m_pitch;
 	}
 
 	unsigned int Camera::GetWidth() const
