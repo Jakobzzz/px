@@ -447,6 +447,82 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Entities"))
 			{
+				// left
+				static int selected = 0;
+				ImGui::BeginChild("Hierachy");
+				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+				{
+					char label[128];
+					sprintf(label, m_entityPicked[i].name.c_str());
+					if (ImGui::Selectable(label, selected == i))
+					{
+						//Give information to GUI about picked object
+						m_pickedName = m_entityPicked[i].name;
+						m_scale = m_entityPicked[i].scale;
+						m_position = m_entityPicked[i].position;
+						m_rotationAngles = m_entityPicked[i].rotationAngles;
+						m_picked = true;
+
+						selected = i;						
+					}
+				}
+				ImGui::EndChild();
+				ImGui::SameLine();
+
+				// right
+				//ImGui::BeginGroup();
+				//ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing())); // Leave room for 1 line below us
+				//ImGui::Text("MyObject: %d", selected);
+				//ImGui::Separator();
+				//ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ");
+				//ImGui::EndChild();
+				//ImGui::BeginChild("buttons");
+				//if (ImGui::Button("Revert")) {}
+				//ImGui::SameLine();
+				//if (ImGui::Button("Save")) {}
+				//ImGui::EndChild();
+				//ImGui::EndGroup();
+
+				//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+
+				//struct funcs
+				//{
+				//	static void ShowDummyObject(const char* prefix, int uid)
+				//	{
+				//		ImGui::PushID(uid);                      // Use object uid as identifier. Most commonly you could also use the object pointer as a base ID.
+				//		ImGui::AlignFirstTextHeightToWidgets();  // Text and Tree nodes are less high than regular widgets, here we add vertical spacing to make the tree lines equal high.
+				//		bool node_open = ImGui::TreeNode("Object", "%s_%u", prefix, uid);
+
+				//		if (node_open)
+				//		{
+				//			//Dummy children
+				//			//for (int i = 0; i < 2; i++)
+				//			//{
+				//			//	ImGui::PushID(i); // Use field index as identifier.		
+				//			//	ImGui::AlignFirstTextHeightToWidgets();
+
+				//			//	// Here we use a Selectable (instead of Text) to highlight on hover
+				//			//	//ImGui::Text("Field_%d", i);
+				//			//	char label[32];
+				//			//	sprintf(label, "Field_%d", i);
+				//			//	ImGui::Bullet();
+				//			//	ImGui::Selectable(label);
+				//			//	ImGui::NextColumn();
+				//			//	ImGui::PushItemWidth(-1);
+				//			//	ImGui::PopItemWidth();
+				//			//	ImGui::NextColumn();
+				//			//	
+				//			//	ImGui::PopID();
+				//			//}
+				//			ImGui::TreePop();
+				//		}
+				//		ImGui::PopID();
+				//	}
+				//};
+
+				//// Iterate dummy objects with dummy members (all the same data)
+				//funcs::ShowDummyObject("Object", 0);
+				//ImGui::PopStyleVar();
 			}
 			ImGui::EndDock();
 
