@@ -14,6 +14,9 @@ namespace px
 		void Draw();
 
 	public:
+		void SetShader(Shaders::ID shader);
+
+	public:
 		Shaders::ID GetShader() const;
 		Models::ID GetModel() const;
 		std::string GetName() const;

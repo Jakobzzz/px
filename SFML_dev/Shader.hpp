@@ -17,7 +17,8 @@ namespace px
 			Phong,
 			Debug,
 			Grid,
-			RenderTexture
+			RenderTexture,
+			Outline
 		};
 	}
 

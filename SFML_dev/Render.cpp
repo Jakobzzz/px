@@ -13,6 +13,11 @@ namespace px
 		m_model->Draw(m_modelID, m_shader);
 	}
 
+	void Render::SetShader(Shaders::ID shader)
+	{
+		m_shader = shader;
+	}
+
 	Shaders::ID Render::GetShader() const
 	{
 		return m_shader;

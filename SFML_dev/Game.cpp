@@ -83,6 +83,7 @@ namespace px
 	void Game::LoadShaders()
 	{
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
+		//Shader::LoadShaders(Shaders::Outline, "triangle.vertex", "outline.fragment");
 		Shader::LoadShaders(Shaders::Debug, "lineDebug.vertex", "lineDebug.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
 	}
@@ -151,22 +152,22 @@ namespace px
 		auto cubeTransform = std::make_unique<Transform>();
 		cubeTransform->SetPosition(FromVec3Json(reader["Cube"]["position"]));
 		cubeTransform->SetRotationOnAllAxis(FromVec3Json(reader["Cube"]["rotation"]));
-		cubeTransform->SetScale(FromVec3Json(reader["Cube"]["scale"]));
+		cubeTransform->SetScale(glm::vec3(1.f));
 
 		auto cube = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Cube");
 		m_cubeEntity.assign<Transformable>(cubeTransform);
 		m_cubeEntity.assign<Renderable>(cube);
 
 		//*** PLANE ENTITY (second cube) ***
-		m_planeEntity = m_entities.create();
+		/*m_planeEntity = m_entities.create();
 		auto planeTransform = std::make_unique<Transform>();
 		planeTransform->SetPosition(FromVec3Json(reader["SecondCube"]["position"]));
 		planeTransform->SetRotationOnAllAxis(FromVec3Json(reader["SecondCube"]["rotation"]));
-		planeTransform->SetScale(FromVec3Json(reader["SecondCube"]["scale"]));
+		planeTransform->SetScale(glm::vec3(1.f));
 
 		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "SecondCube");
 		m_planeEntity.assign<Transformable>(planeTransform);
-		m_planeEntity.assign<Renderable>(plane);
+		m_planeEntity.assign<Renderable>(plane);*/
 	}
 
 	void Game::Run()
@@ -209,10 +210,9 @@ namespace px
 		glClearColor(0.274f, 0.227f, 0.227f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if(m_showGrid)
+		if (m_showGrid)
 			m_grid->Draw(Shaders::Grid);
 
-		//VP matrices + Phong Shading
 		Shader::Use(Shaders::Phong);
 		Shader::SetMatrix4x4(Shaders::Phong, "projection", m_camera->GetProjectionMatrix());
 		Shader::SetMatrix4x4(Shaders::Phong, "view", m_camera->GetViewMatrix());
@@ -223,28 +223,6 @@ namespace px
 
 		//Update systems
 		m_systems.update<RenderSystem>(dt);
-
-		//Render picking line
-		//Shader::Use(Shaders::Debug);
-
-		//glm::vec3 startPos = glm::vec3(-0.164f, 10.694f, 32.12f);
-		//m_lines[0].position = startPos;
-		//m_lines[1].position = startPos + Picking::GetPickingRay() * FAR_PLANE;
-
-		//glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		//glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
-
-		////Positions
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
-		//glEnableVertexAttribArray(0);
-
-		//Shader::SetMatrix4x4(Shaders::Debug, "model", glm::mat4());
-		//Shader::SetMatrix4x4(Shaders::Debug, "projection", m_camera->GetProjectionMatrix());
-		//Shader::SetMatrix4x4(Shaders::Debug, "view", m_camera->GetViewMatrix());
-
-		//glBindVertexArray(m_VAO);
-		//glDrawArrays(GL_LINES, 0, m_lines.size());
-		//glBindVertexArray(0);
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
