@@ -157,8 +157,5 @@
     <None Include="lineDebug.fragment">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="outline.fragment">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>

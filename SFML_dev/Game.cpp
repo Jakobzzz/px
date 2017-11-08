@@ -83,7 +83,6 @@ namespace px
 	void Game::LoadShaders()
 	{
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
-		//Shader::LoadShaders(Shaders::Outline, "triangle.vertex", "outline.fragment");
 		Shader::LoadShaders(Shaders::Debug, "lineDebug.vertex", "lineDebug.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
 	}
@@ -159,7 +158,7 @@ namespace px
 		m_cubeEntity.assign<Renderable>(cube);
 
 		//*** PLANE ENTITY (second cube) ***
-		/*m_planeEntity = m_entities.create();
+		m_planeEntity = m_entities.create();
 		auto planeTransform = std::make_unique<Transform>();
 		planeTransform->SetPosition(FromVec3Json(reader["SecondCube"]["position"]));
 		planeTransform->SetRotationOnAllAxis(FromVec3Json(reader["SecondCube"]["rotation"]));
@@ -167,7 +166,7 @@ namespace px
 
 		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "SecondCube");
 		m_planeEntity.assign<Transformable>(planeTransform);
-		m_planeEntity.assign<Renderable>(plane);*/
+		m_planeEntity.assign<Renderable>(plane);
 	}
 
 	void Game::Run()
