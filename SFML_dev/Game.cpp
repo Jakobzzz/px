@@ -28,7 +28,7 @@ namespace px
 	std::string Game::m_pickedName;
 	std::vector<Game::PickingInfo> Game::m_entityPicked;
 
-	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events)
+	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events), m_cubeCreationCounter(0)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -122,28 +122,22 @@ namespace px
 		//Camera
 		glm::vec3 cameraPos = FromVec3Json(reader["Camera"]["position"]);
 		m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
+	
+		//Restore scene data from file
+		for (unsigned int i = 0; i < reader["Scene"]["Count"]; i++)
+		{
+			std::string name = reader["Scene"]["Names"][i];
 
-		//*** CUBE ENTITY ***
-		m_cubeEntity = m_entities.create();
-		auto cubeTransform = std::make_unique<Transform>();
-		cubeTransform->SetPosition(FromVec3Json(reader["Cube"]["position"]));
-		cubeTransform->SetRotationOnAllAxis(FromVec3Json(reader["Cube"]["rotation"]));
-		cubeTransform->SetScale(glm::vec3(1.f));
+			auto entity = m_entities.create();
+			auto transform = std::make_unique<Transform>();
+			transform->SetPosition(FromVec3Json(reader[name]["position"]));
+			transform->SetRotationOnAllAxis(FromVec3Json(reader[name]["rotation"]));
+			transform->SetScale(FromVec3Json(reader[name]["scale"]));
 
-		auto cube = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Cube");
-		m_cubeEntity.assign<Transformable>(cubeTransform);
-		m_cubeEntity.assign<Renderable>(cube);
-
-		//*** PLANE ENTITY (second cube) ***
-		m_planeEntity = m_entities.create();
-		auto planeTransform = std::make_unique<Transform>();
-		planeTransform->SetPosition(FromVec3Json(reader["SecondCube"]["position"]));
-		planeTransform->SetRotationOnAllAxis(FromVec3Json(reader["SecondCube"]["rotation"]));
-		planeTransform->SetScale(glm::vec3(1.f));
-
-		auto plane = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "SecondCube");
-		m_planeEntity.assign<Transformable>(planeTransform);
-		m_planeEntity.assign<Renderable>(plane);
+			auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, name);
+			entity.assign<Transformable>(transform);
+			entity.assign<Renderable>(render);
+		}
 	}
 
 	void Game::Run()
@@ -297,6 +291,24 @@ namespace px
 				if (ImGui::MenuItem("Show Grid", NULL, &m_showGrid)) {}
 				if (ImGui::MenuItem("Show FPS", NULL, &m_showFPS)) {}
 				if (ImGui::MenuItem("Show Position", NULL, &m_showCameraPosition)) {}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("GameObject"))
+			{
+				if (ImGui::BeginMenu("3D Object"))
+				{
+					if(ImGui::MenuItem("Cube"))
+					{
+						auto entity = m_entities.create();
+						auto transform = std::make_unique<Transform>();
+						auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Cube" + std::to_string(m_cubeCreationCounter));
+						entity.assign<Transformable>(transform);
+						entity.assign<Renderable>(render);
+						m_cubeCreationCounter++;
+					}
+					ImGui::EndMenu();
+				}
 				ImGui::EndMenu();
 			}
 
@@ -468,6 +480,13 @@ namespace px
 	{
 		//Write scene information to json file
 		json data;
+		data["Scene"]["Count"] = m_entityPicked.size();
+
+		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+		{
+			data["Scene"]["Names"][i] = m_entityPicked[i].name;
+		}
+
 		data["Camera"]["position"] = ToVec3Json(m_camera->GetPosition());
 		data["Camera"]["yaw"] = m_camera->GetYaw();
 		data["Camera"]["pitch"] = m_camera->GetPitch();
@@ -523,6 +542,7 @@ namespace px
 			{
 				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);
 
+				//TODO: change so the hierachy list also updates when picking an object!
 				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 				{
 					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_entityPicked[i].world))

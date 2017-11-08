@@ -76,6 +76,7 @@ namespace px
 		static glm::vec3 m_scale;
 		
 	private:
+		int m_cubeCreationCounter;
 		bool* m_open;
 		float m_frameTime;
 		GLFWwindow* m_window;
