@@ -85,6 +85,7 @@ namespace px
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
 		Shader::LoadShaders(Shaders::Debug, "lineDebug.vertex", "lineDebug.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
+		Shader::LoadShaders(Shaders::Outline, "triangle.vertex", "outline.fragment");
 	}
 
 	void Game::LoadModels()
@@ -193,7 +194,6 @@ namespace px
 			glfwPollEvents();
 
 			UpdateGUI(deltaTime);			
-			Update((float)deltaTime);
 
 			//Render IMGUI last
 			ImGui::Render();
@@ -212,6 +212,27 @@ namespace px
 		if (m_showGrid)
 			m_grid->Draw(Shaders::Grid);
 
+		//Dummy code: render picked object with red color
+		if (m_picked)
+		{
+			Shader::Use(Shaders::Outline);
+			Shader::SetMatrix4x4(Shaders::Outline, "projection", m_camera->GetProjectionMatrix());
+			Shader::SetMatrix4x4(Shaders::Outline, "view", m_camera->GetViewMatrix());
+
+			ComponentHandle<Transformable> transform;
+			ComponentHandle<Renderable> renderable;
+			for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+			{
+				if (m_pickedName == renderable->object->GetName())
+				{
+					transform->transform->SetTransform();
+					Shader::SetMatrix4x4(Shaders::Outline, "model", transform->transform->GetTransform());
+					renderable->object->Draw();
+					transform->transform->SetIdentity();
+				}
+			}
+		}
+
 		Shader::Use(Shaders::Phong);
 		Shader::SetMatrix4x4(Shaders::Phong, "projection", m_camera->GetProjectionMatrix());
 		Shader::SetMatrix4x4(Shaders::Phong, "view", m_camera->GetViewMatrix());
@@ -219,6 +240,8 @@ namespace px
 		Shader::SetFloat3v(Shaders::Phong, "direction", m_lightDirection);
 		Shader::SetFloat(Shaders::Phong, "ambientStrength", m_ambient);
 		Shader::SetFloat(Shaders::Phong, "specularStrength", m_specular);
+
+		Update((float)dt);
 
 		//Update systems
 		m_systems.update<RenderSystem>(dt);
@@ -239,7 +262,7 @@ namespace px
 		m_entityPicked.resize(m_entities.size());
 		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
 		{
-			if (m_pickedName == renderable->object->GetName())
+			if (m_pickedName == renderable->object->GetName() && m_picked)
 			{
 				//Set transform from GUI with picked object
 				transform->transform->SetPosition(m_position);

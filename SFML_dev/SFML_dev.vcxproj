@@ -196,6 +196,7 @@
     <None Include="grid.vertex" />
     <None Include="lineDebug.fragment" />
     <None Include="lineDebug.vertex" />
+    <None Include="outline.fragment" />
     <None Include="triangle.fragment" />
     <None Include="triangle.vertex" />
   </ItemGroup>
