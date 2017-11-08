@@ -96,17 +96,6 @@ namespace px
 		glm::vec3 m_lightDirection;
 		float m_ambient;
 		float m_specular;		
-
-	private:
-		struct LineInfo
-		{
-			glm::vec3 position;
-		};
-
-		//Simple line
-		unsigned int m_VBO;
-		unsigned int m_VAO;
-		std::vector<LineInfo> m_lines;
 	};
 }
 

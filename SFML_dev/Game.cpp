@@ -72,9 +72,6 @@ namespace px
 
 		WriteSceneData();
 
-		/*glDeleteVertexArrays(1, &m_VAO);
-		glDeleteBuffers(1, &m_VBO);*/
-
 		m_models->Destroy(Models::Cube);
 		ImGui_ImplGlfwGL3_Shutdown();
 		glfwTerminate();
@@ -83,9 +80,7 @@ namespace px
 	void Game::LoadShaders()
 	{
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
-		Shader::LoadShaders(Shaders::Debug, "lineDebug.vertex", "lineDebug.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
-		Shader::LoadShaders(Shaders::Outline, "triangle.vertex", "outline.fragment");
 	}
 
 	void Game::LoadModels()
@@ -107,25 +102,6 @@ namespace px
 
 		//Grid
 		m_grid = std::make_unique<Grid>(m_camera);
-
-		//Lines
-		//m_lines.push_back({ glm::vec3(0.f, 0.f, 0.f) }); //Line start
-		//m_lines.push_back({ glm::vec3(20.f, 0.f, 0.f) }); //Line end
-
-		//glGenVertexArrays(1, &m_VAO);
-		//glGenBuffers(1, &m_VBO);
-
-		//glBindVertexArray(m_VAO);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		//glBufferData(GL_ARRAY_BUFFER, m_lines.size() * sizeof(LineInfo), &m_lines[0], GL_DYNAMIC_DRAW);
-
-		////Positions
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineInfo), (void*)0);
-		//glEnableVertexAttribArray(0);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
-		//glBindVertexArray(0);
 
 		//Lightning
 		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
@@ -194,6 +170,7 @@ namespace px
 			glfwPollEvents();
 
 			UpdateGUI(deltaTime);			
+			Update((float)deltaTime);
 
 			//Render IMGUI last
 			ImGui::Render();
@@ -212,27 +189,6 @@ namespace px
 		if (m_showGrid)
 			m_grid->Draw(Shaders::Grid);
 
-		//Dummy code: render picked object with red color
-		if (m_picked)
-		{
-			Shader::Use(Shaders::Outline);
-			Shader::SetMatrix4x4(Shaders::Outline, "projection", m_camera->GetProjectionMatrix());
-			Shader::SetMatrix4x4(Shaders::Outline, "view", m_camera->GetViewMatrix());
-
-			ComponentHandle<Transformable> transform;
-			ComponentHandle<Renderable> renderable;
-			for (Entity & entity : m_entities.entities_with_components(transform, renderable))
-			{
-				if (m_pickedName == renderable->object->GetName())
-				{
-					transform->transform->SetTransform();
-					Shader::SetMatrix4x4(Shaders::Outline, "model", transform->transform->GetTransform());
-					renderable->object->Draw();
-					transform->transform->SetIdentity();
-				}
-			}
-		}
-
 		Shader::Use(Shaders::Phong);
 		Shader::SetMatrix4x4(Shaders::Phong, "projection", m_camera->GetProjectionMatrix());
 		Shader::SetMatrix4x4(Shaders::Phong, "view", m_camera->GetViewMatrix());
@@ -240,8 +196,6 @@ namespace px
 		Shader::SetFloat3v(Shaders::Phong, "direction", m_lightDirection);
 		Shader::SetFloat(Shaders::Phong, "ambientStrength", m_ambient);
 		Shader::SetFloat(Shaders::Phong, "specularStrength", m_specular);
-
-		Update((float)dt);
 
 		//Update systems
 		m_systems.update<RenderSystem>(dt);

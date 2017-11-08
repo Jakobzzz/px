@@ -9,6 +9,7 @@ namespace px
 
 	void Mesh::Draw(Shaders::ID id)
 	{
+		//Disabled for picking highlight purposes
 		Shader::SetFloat3v(id, "color", m_color);
 
 		glBindVertexArray(m_VAO);
