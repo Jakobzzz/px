@@ -22,6 +22,7 @@ namespace px
 	bool Game::m_showFPS = false;
 	bool Game::m_showCameraPosition = true;
 	bool Game::m_picked = false;
+	int Game::m_selectedEntity = 0;
 	glm::vec3 Game::m_rotationAngles;
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
@@ -300,12 +301,25 @@ namespace px
 				{
 					if(ImGui::MenuItem("Cube"))
 					{
+						std::string name = "Cube" + std::to_string(m_cubeCreationCounter);
+
+						//Verify that the given name isn't already taken
+						for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+						{
+							if (name != m_entityPicked[i].name)
+								name = name;
+							else
+							{
+								m_cubeCreationCounter++;
+								name = "Cube" + std::to_string(m_cubeCreationCounter);
+							}
+						}
+
 						auto entity = m_entities.create();
 						auto transform = std::make_unique<Transform>();
-						auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, "Cube" + std::to_string(m_cubeCreationCounter));
+						auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, name);
 						entity.assign<Transformable>(transform);
 						entity.assign<Renderable>(render);
-						m_cubeCreationCounter++;
 					}
 					ImGui::EndMenu();
 				}
@@ -313,6 +327,23 @@ namespace px
 			}
 
 			ImGui::EndMainMenuBar();
+		}
+
+		//Remove the picked object if delete is pressed
+		if (m_picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)
+		{
+			ComponentHandle<Transformable> transform;
+			ComponentHandle<Renderable> renderable;
+
+			//Update entities transformation
+			m_entityPicked.resize(m_entities.size());
+			for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+			{
+				if (m_pickedName == renderable->object->GetName())
+				{
+					m_entities.destroy(entity.id());
+				}
+			}
 		}
 
 		//Camera position overlay at the bottom of the scene
@@ -409,13 +440,12 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Entities"))
 			{
-				static int selected = 0;
 				ImGui::BeginChild("Hierachy");
 				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 				{
 					char label[128];
 					sprintf(label, m_entityPicked[i].name.c_str());
-					if (ImGui::Selectable(label, selected == i))
+					if (ImGui::Selectable(label, m_selectedEntity == i))
 					{
 						//Give information to GUI about picked object
 						m_pickedName = m_entityPicked[i].name;
@@ -424,7 +454,7 @@ namespace px
 						m_rotationAngles = m_entityPicked[i].rotationAngles;
 						m_picked = true;
 
-						selected = i;						
+						m_selectedEntity = i;						
 					}
 				}
 				ImGui::EndChild();
@@ -548,6 +578,7 @@ namespace px
 					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_entityPicked[i].world))
 					{
 						//Give information to GUI about picked object
+						m_selectedEntity = i;
 						m_pickedName = m_entityPicked[i].name;
 						m_scale = m_entityPicked[i].scale;
 						m_position = m_entityPicked[i].position;

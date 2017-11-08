@@ -74,6 +74,7 @@ namespace px
 		static glm::vec3 m_rotationAngles;
 		static glm::vec3 m_position;
 		static glm::vec3 m_scale;
+		static int m_selectedEntity;
 		
 	private:
 		int m_cubeCreationCounter;
