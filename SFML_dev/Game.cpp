@@ -50,7 +50,7 @@ namespace px
 		glfwSetCursorPosCallback(m_window, OnMouseCallback);
 
 		//ImGUI initialize
-		InitImGuiStyle(true, 0.5f);
+		InitImGuiStyle(true, 0.9f);
 		ImGui_ImplGlfwGL3_Init(m_window, true);
 
 		//Override imgui mouse button callback
@@ -121,13 +121,18 @@ namespace px
 		json reader; i >> reader; i.close();
 
 		//Camera
-		glm::vec3 cameraPos = FromVec3Json(reader["Camera"]["position"]);
-		m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
+		if (reader["Camera"]["count"] == 1) //Prevent crash if the scene file doens't have camera data
+		{
+			glm::vec3 cameraPos = FromVec3Json(reader["Camera"]["position"]);
+			m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
+		}
+		else
+			m_camera = std::make_shared<Camera>();
 	
 		//Restore scene data from file
-		for (unsigned int i = 0; i < reader["Scene"]["Count"]; i++)
+		for (unsigned int i = 0; i < reader["Scene"]["count"]; i++)
 		{
-			std::string name = reader["Scene"]["Names"][i];
+			std::string name = reader["Scene"]["names"][i];
 
 			auto entity = m_entities.create();
 			auto transform = std::make_unique<Transform>();
@@ -304,6 +309,7 @@ namespace px
 						std::string name = "Cube" + std::to_string(m_cubeCreationCounter);
 
 						//Verify that the given name isn't already taken
+						//Doesn't work very well, better with a tree search instead?
 						for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 						{
 							if (name != m_entityPicked[i].name)
@@ -342,6 +348,7 @@ namespace px
 				if (m_pickedName == renderable->object->GetName())
 				{
 					m_entities.destroy(entity.id());
+					m_cubeCreationCounter = 0;
 				}
 			}
 		}
@@ -510,13 +517,14 @@ namespace px
 	{
 		//Write scene information to json file
 		json data;
-		data["Scene"]["Count"] = m_entityPicked.size();
+		data["Scene"]["count"] = m_entityPicked.size();
 
 		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 		{
-			data["Scene"]["Names"][i] = m_entityPicked[i].name;
+			data["Scene"]["names"][i] = m_entityPicked[i].name;
 		}
 
+		data["Camera"]["count"] = 1;
 		data["Camera"]["position"] = ToVec3Json(m_camera->GetPosition());
 		data["Camera"]["yaw"] = m_camera->GetYaw();
 		data["Camera"]["pitch"] = m_camera->GetPitch();

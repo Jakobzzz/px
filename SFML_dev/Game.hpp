@@ -87,8 +87,6 @@ namespace px
 
 	private:
 		//Entities
-		Entity m_cubeEntity;
-		Entity m_planeEntity;
 		EntityManager m_entities;
 		EventManager m_events;
 		SystemManager m_systems;
