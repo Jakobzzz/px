@@ -18,6 +18,11 @@ namespace px
 		m_shader = shader;
 	}
 
+	void Render::SetName(std::string name)
+	{
+		m_name = name;
+	}
+
 	Shaders::ID Render::GetShader() const
 	{
 		return m_shader;

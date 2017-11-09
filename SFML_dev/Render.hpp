@@ -15,6 +15,7 @@ namespace px
 
 	public:
 		void SetShader(Shaders::ID shader);
+		void SetName(std::string name);
 
 	public:
 		Shaders::ID GetShader() const;

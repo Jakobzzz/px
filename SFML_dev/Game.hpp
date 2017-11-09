@@ -75,11 +75,13 @@ namespace px
 		static glm::vec3 m_position;
 		static glm::vec3 m_scale;
 		static int m_selectedEntity;
-		
+		static std::vector<char> m_nameChanger;
+			
 	private:
 		int m_cubeCreationCounter;
 		bool* m_open;
 		float m_frameTime;
+		//char m_nameChanger[100];
 		GLFWwindow* m_window;
 		std::unique_ptr<Grid> m_grid;
 		std::unique_ptr<RenderTexture> m_frameBuffer;
@@ -95,7 +97,7 @@ namespace px
 		//Lightning variables
 		glm::vec3 m_lightDirection;
 		float m_ambient;
-		float m_specular;		
+		float m_specular;	
 	};
 }
 

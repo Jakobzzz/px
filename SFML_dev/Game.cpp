@@ -23,6 +23,7 @@ namespace px
 	bool Game::m_showCameraPosition = true;
 	bool Game::m_picked = false;
 	int Game::m_selectedEntity = 0;
+	std::vector<char> Game::m_nameChanger;
 	glm::vec3 Game::m_rotationAngles;
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
@@ -342,13 +343,14 @@ namespace px
 			ComponentHandle<Renderable> renderable;
 
 			//Update entities transformation
-			m_entityPicked.resize(m_entities.size());
 			for (Entity & entity : m_entities.entities_with_components(transform, renderable))
 			{
 				if (m_pickedName == renderable->object->GetName())
 				{
 					m_entities.destroy(entity.id());
 					m_cubeCreationCounter = 0;
+					m_picked = false;
+					break;
 				}
 			}
 		}
@@ -426,8 +428,23 @@ namespace px
 			{
 				if (m_picked)
 				{
-					std::string info = "Entity: " + m_pickedName;
-					ImGui::Text(info.c_str());
+					//Change name of entity upon completion
+					if (ImGui::InputText("Name", m_nameChanger.data(), m_nameChanger.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+					{
+						ComponentHandle<Transformable> transform;
+						ComponentHandle<Renderable> renderable;
+
+						//Update entities transformation
+						for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+						{
+							if (m_pickedName == renderable->object->GetName())
+							{
+								renderable->object->SetName(m_nameChanger.data());
+								break;
+							}
+						}
+					}
+
 					ImGui::Spacing();
 
 					ImGui::SetNextTreeNodeOpen(true, 2);
@@ -443,7 +460,7 @@ namespace px
 				}
 			}
 			ImGui::EndDock();
-
+			
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Entities"))
 			{
@@ -456,6 +473,12 @@ namespace px
 					{
 						//Give information to GUI about picked object
 						m_pickedName = m_entityPicked[i].name;
+
+						//Copy the name to the char vector
+						m_nameChanger.clear(); m_nameChanger.resize(50);
+						for (unsigned int p = 0; p < m_pickedName.size(); p++)
+							m_nameChanger[p] = m_pickedName[p];
+
 						m_scale = m_entityPicked[i].scale;
 						m_position = m_entityPicked[i].position;
 						m_rotationAngles = m_entityPicked[i].rotationAngles;
@@ -484,7 +507,7 @@ namespace px
 
 			ImGui::EndDockspace();
 		}
-		ImGui::End();		
+		ImGui::End();
 	}
 
 	void Game::UpdateCamera(float dt)
@@ -592,6 +615,12 @@ namespace px
 						m_position = m_entityPicked[i].position;
 						m_rotationAngles = m_entityPicked[i].rotationAngles;
 						m_picked = true;
+
+						//Copy the name to the char vector
+						m_nameChanger.clear(); m_nameChanger.resize(50);
+						for (unsigned int p = 0; p < m_pickedName.size(); p++)
+							m_nameChanger[p] = m_pickedName[p];
+
 						gameLog.Print("Picked\n");
 						break;
 					}
