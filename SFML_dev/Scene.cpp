@@ -14,8 +14,6 @@ using json = nlohmann::json;
 
 namespace px
 {
-	std::shared_ptr<Camera> Scene::m_camera;
-
 	Scene::Scene() : m_entities(m_events), m_systems(m_entities, m_events)
 	{
 	}
@@ -81,7 +79,7 @@ namespace px
 		entity.assign<Renderable>(render);
 	}
 
-	void Scene::DeleteEntity(std::string name)
+	void Scene::DestroyEntity(std::string name)
 	{
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
@@ -148,7 +146,7 @@ namespace px
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
-		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
+		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
 		{
 			data["Scene"]["names"][i] = renderable->object->GetName();
 			data[renderable->object->GetName()]["position"] = utils::ToVec3Json(transform->transform->GetPosition());
@@ -164,7 +162,7 @@ namespace px
 
 	void Scene::DestroyScene()
 	{
-		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
+		for (Entity & entity : m_entities.entities_with_components<Transformable, Renderable>())
 			entity.destroy();
 	}
 

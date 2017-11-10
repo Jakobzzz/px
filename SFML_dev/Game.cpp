@@ -3,19 +3,14 @@
 #include "imgui_impl_glfw_gl3.h"
 #include "imgui_log.h"
 #include "imgui_console.h"
-#include "Converters.hpp"
 
 #include <assert.h>
 #include <iostream>
 #include <functional>
-#include <json.hpp>
-#include <fstream>
-
-using json = nlohmann::json;
 
 namespace px
 {
-	std::shared_ptr<Camera> Game::m_camera;
+	//Static functions
 	float Game::m_lastX = (float)WINDOW_WIDTH / 2.f;
 	float Game::m_lastY = (float)WINDOW_HEIGHT / 2.f;
 	bool Game::m_hovered = false;
@@ -29,9 +24,10 @@ namespace px
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
 	std::string Game::m_pickedName;
-	std::vector<Game::PickingInfo> Game::m_entityPicked;
+	std::vector<PickingInfo> Game::m_entityPicked;
+	std::unique_ptr<Scene> Game::m_scene;
 
-	Game::Game() : m_frameTime(0.f), m_entities(m_events), m_systems(m_entities, m_events), m_cubeCreationCounter(0)
+	Game::Game() : m_frameTime(0.f), m_cubeCreationCounter(0)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -64,16 +60,14 @@ namespace px
 		InitScene();
 
 		//Lua functions
-		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_camera->SetPosition(glm::vec3(x, y, z)); });
+		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_scene->GetCamera()->SetPosition(glm::vec3(x, y, z)); });
 		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
 	}
 
 	Game::~Game()
 	{
-		for (Entity entity : m_entities.entities_with_components<Transformable, Renderable>())
-			entity.destroy();
-
-		WriteSceneData();
+		m_scene->WriteSceneData();
+		m_scene->DestroyScene();
 
 		m_models->Destroy(Models::Cube);
 		ImGui_ImplGlfwGL3_Shutdown();
@@ -97,55 +91,13 @@ namespace px
 		LoadShaders();
 		LoadModels();
 
-		//Render textures
+		m_scene = std::make_unique<Scene>();
+		m_scene->LoadScene(m_models);
 		m_frameBuffer = std::make_unique<RenderTexture>();
-
-		//Entites
-		InitEntities();
-
-		//Grid
-		m_grid = std::make_unique<Grid>(m_camera);
+		m_grid = std::make_unique<Grid>(m_scene->GetCamera());
 
 		//Lightning
-		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
-		m_ambient = 0.3f;
-		m_specular = 0.2f;
-
-		//Systems
-		m_systems.add<RenderSystem>();
-		m_systems.configure();
-	}
-
-	void Game::InitEntities()
-	{
-		//Read values from scene json file
-		std::ifstream i("Scripts/Json/scene.json");
-		json reader; i >> reader; i.close();
-
-		//Camera
-		if (reader["Camera"]["count"] == 1) //Prevent crash if the scene file doesn't have camera data
-		{
-			glm::vec3 cameraPos = utils::FromVec3Json(reader["Camera"]["position"]);
-			m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
-		}
-		else
-			m_camera = std::make_shared<Camera>();
-	
-		//Restore scene data from file
-		for (unsigned int i = 0; i < reader["Scene"]["count"]; i++)
-		{
-			std::string name = reader["Scene"]["names"][i];
-
-			auto entity = m_entities.create();
-			auto transform = std::make_unique<Transform>();
-			transform->SetPosition(utils::FromVec3Json(reader[name]["position"]));
-			transform->SetRotationOnAllAxis(utils::FromVec3Json(reader[name]["rotation"]));
-			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
-
-			auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, name);
-			entity.assign<Transformable>(transform);
-			entity.assign<Renderable>(render);
-		}
+		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f); m_ambient = 0.3f; m_specular = 0.2f;
 	}
 
 	void Game::Run()
@@ -192,15 +144,15 @@ namespace px
 			m_grid->Draw(Shaders::Grid);
 
 		Shader::Use(Shaders::Phong);
-		Shader::SetMatrix4x4(Shaders::Phong, "projection", m_camera->GetProjectionMatrix());
-		Shader::SetMatrix4x4(Shaders::Phong, "view", m_camera->GetViewMatrix());
-		Shader::SetFloat3v(Shaders::Phong, "viewpos", m_camera->GetPosition());
+		Shader::SetMatrix4x4(Shaders::Phong, "projection", m_scene->GetCamera()->GetProjectionMatrix());
+		Shader::SetMatrix4x4(Shaders::Phong, "view", m_scene->GetCamera()->GetViewMatrix());
+		Shader::SetFloat3v(Shaders::Phong, "viewpos", m_scene->GetCamera()->GetPosition());
 		Shader::SetFloat3v(Shaders::Phong, "direction", m_lightDirection);
 		Shader::SetFloat(Shaders::Phong, "ambientStrength", m_ambient);
 		Shader::SetFloat(Shaders::Phong, "specularStrength", m_specular);
 
 		//Update systems
-		m_systems.update<RenderSystem>(dt);
+		m_scene->UpdateSystems(dt);
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
@@ -210,31 +162,8 @@ namespace px
 
 	void Game::Update(float dt)
 	{
-		ComponentHandle<Transformable> transform;
-		ComponentHandle<Renderable> renderable;
-
-		//Update entities transformation
-		int i = 0;
-		m_entityPicked.resize(m_entities.size());
-		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
-		{
-			if (m_pickedName == renderable->object->GetName() && m_picked)
-			{
-				//Set transform from GUI with picked object
-				transform->transform->SetPosition(m_position);
-				transform->transform->SetRotationOnAllAxis(m_rotationAngles);
-				transform->transform->SetScale(m_scale);
-			}
-			else
-				transform->transform->SetTransform();
-
-			m_entityPicked[i].position = transform->transform->GetPosition();
-			m_entityPicked[i].rotationAngles = transform->transform->GetRotationAngles();
-			m_entityPicked[i].scale = transform->transform->GetScale();
-			m_entityPicked[i].world = transform->transform->GetTransform();
-			m_entityPicked[i].name = renderable->object->GetName();
-			i++;
-		}
+		m_entityPicked.resize(m_scene->GetEntityCount());
+		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_entityPicked);
 
 		if (m_hovered)
 			UpdateCamera(dt);
@@ -248,8 +177,8 @@ namespace px
 
 		if (width != size.x || height != size.y)
 		{
-			m_camera->SetWidth((unsigned int)size.x);
-			m_camera->SetHeight((unsigned int)size.y);
+			m_scene->GetCamera()->SetWidth((unsigned int)size.x);
+			m_scene->GetCamera()->SetHeight((unsigned int)size.y);
 			m_frameBuffer->ResizeBuffer((unsigned int)size.x, (unsigned int)size.y);
 		}
 
@@ -323,37 +252,21 @@ namespace px
 							}
 						}
 
-						auto entity = m_entities.create();
-						auto transform = std::make_unique<Transform>();
-						auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, name);
-						entity.assign<Transformable>(transform);
-						entity.assign<Renderable>(render);
+						m_scene->CreateEntity(m_models, Models::Cube, name);
 					}
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
 			}
-
 			ImGui::EndMainMenuBar();
 		}
 
 		//Remove the picked object if delete is pressed
 		if (m_picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)
 		{
-			ComponentHandle<Transformable> transform;
-			ComponentHandle<Renderable> renderable;
-
-			//Update entities transformation
-			for (Entity & entity : m_entities.entities_with_components(transform, renderable))
-			{
-				if (m_pickedName == renderable->object->GetName())
-				{
-					m_entities.destroy(entity.id());
-					m_cubeCreationCounter = 0;
-					m_picked = false;
-					break;
-				}
-			}
+			m_scene->DestroyEntity(m_pickedName);
+			m_cubeCreationCounter = 0;
+			m_picked = false;
 		}
 
 		//Camera position overlay at the bottom of the scene
@@ -367,7 +280,7 @@ namespace px
 				return;
 			}
 
-			ImGui::Text("(%.3f, %.3f, %.3f)      ", m_camera->GetPosition().x, m_camera->GetPosition().y, m_camera->GetPosition().z);
+			ImGui::Text("(%.3f, %.3f, %.3f)      ", m_scene->GetCamera()->GetPosition().x, m_scene->GetCamera()->GetPosition().y, m_scene->GetCamera()->GetPosition().z);
 			ImGui::End();		
 		}
 		
@@ -432,18 +345,7 @@ namespace px
 					//Change name of entity upon completion
 					if (ImGui::InputText("Name", m_nameChanger.data(), m_nameChanger.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						ComponentHandle<Transformable> transform;
-						ComponentHandle<Renderable> renderable;
-
-						//Update entities transformation
-						for (Entity & entity : m_entities.entities_with_components(transform, renderable))
-						{
-							if (m_pickedName == renderable->object->GetName())
-							{
-								renderable->object->SetName(m_nameChanger.data());
-								break;
-							}
-						}
+						m_scene->ChangeEntityName(m_pickedName, m_nameChanger.data());
 					}
 
 					ImGui::Spacing();
@@ -515,40 +417,13 @@ namespace px
 	{
 		//Camera movement
 		if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
-			m_camera->ProcessKeyboard(FORWARD, dt);
+			m_scene->GetCamera()->ProcessKeyboard(FORWARD, dt);
 		if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
-			m_camera->ProcessKeyboard(BACKWARD, dt);
+			m_scene->GetCamera()->ProcessKeyboard(BACKWARD, dt);
 		if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
-			m_camera->ProcessKeyboard(RIGHT, dt);
+			m_scene->GetCamera()->ProcessKeyboard(RIGHT, dt);
 		if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
-			m_camera->ProcessKeyboard(LEFT, dt);
-	}
-
-	void Game::WriteSceneData()
-	{
-		//Write scene information to json file
-		json data;
-		data["Scene"]["count"] = m_entityPicked.size();
-
-		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
-		{
-			data["Scene"]["names"][i] = m_entityPicked[i].name;
-		}
-
-		data["Camera"]["count"] = 1;
-		data["Camera"]["position"] = utils::ToVec3Json(m_camera->GetPosition());
-		data["Camera"]["yaw"] = m_camera->GetYaw();
-		data["Camera"]["pitch"] = m_camera->GetPitch();
-
-		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
-		{
-			data[m_entityPicked[i].name]["position"] = utils::ToVec3Json(m_entityPicked[i].position);
-			data[m_entityPicked[i].name]["rotation"] = utils::ToVec3Json(m_entityPicked[i].rotationAngles);
-			data[m_entityPicked[i].name]["scale"] = utils::ToVec3Json(m_entityPicked[i].scale);
-		}
-
-		std::ofstream o("Scripts/Json/scene.json");
-		o << std::setw(3) << data << std::endl;
+			m_scene->GetCamera()->ProcessKeyboard(LEFT, dt);
 	}
 
 	//*** Callbacks ***
@@ -561,7 +436,7 @@ namespace px
 	{
 		if (m_hovered)
 		{
-			if (m_camera->GetFirstMouse())
+			if (m_scene->GetCamera()->GetFirstMouse())
 			{
 				m_lastX = (float)xpos;
 				m_lastY = (float)ypos;
@@ -573,7 +448,7 @@ namespace px
 			m_lastX = (float)xpos;
 			m_lastY = (float)ypos;
 			
-			m_camera->ProcessMouseMovement(window, xoffset, yoffset);
+			m_scene->GetCamera()->ProcessMouseMovement(window, xoffset, yoffset);
 		}
 	}
 
@@ -581,15 +456,13 @@ namespace px
 	{
 		if ((button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
 		{
-			//Width formula for new resize 
-			//(window_width - new_width) / 2
-			//Height formula (approximation)
-			//(new_height / 8)
+			//Width formula for new resize -> (window_width - new_width) / 2
+			//Height formula (approximation) -> (new_height / 8)
 
 			//Picking: project 2D-position to 3D and check intersection with OBB
 			if (m_hovered)
 			{
-				Picking::PerformMousePicking(m_camera, m_lastX - 16, m_lastY - 50);
+				Picking::PerformMousePicking(m_scene->GetCamera(), m_lastX - 16, m_lastY - 50);
 
 				//TODO: change so the hierachy list also updates when picking an object!
 				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
@@ -619,7 +492,7 @@ namespace px
 		}
 	}
 
-	void Game::OnMouseScrollCallback(GLFWwindow * window, double xoffset, double yoffset)
+	/*void Game::OnMouseScrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 	{
 		float fov = m_camera->GetFov();
 
@@ -643,5 +516,5 @@ namespace px
 				m_camera->SetFov(fov);
 			}
 		}
-	}
+	}*/
 }
