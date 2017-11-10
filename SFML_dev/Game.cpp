@@ -3,6 +3,7 @@
 #include "imgui_impl_glfw_gl3.h"
 #include "imgui_log.h"
 #include "imgui_console.h"
+#include "Converters.hpp"
 
 #include <assert.h>
 #include <iostream>
@@ -122,9 +123,9 @@ namespace px
 		json reader; i >> reader; i.close();
 
 		//Camera
-		if (reader["Camera"]["count"] == 1) //Prevent crash if the scene file doens't have camera data
+		if (reader["Camera"]["count"] == 1) //Prevent crash if the scene file doesn't have camera data
 		{
-			glm::vec3 cameraPos = FromVec3Json(reader["Camera"]["position"]);
+			glm::vec3 cameraPos = utils::FromVec3Json(reader["Camera"]["position"]);
 			m_camera = std::make_shared<Camera>(cameraPos, reader["Camera"]["yaw"], reader["Camera"]["pitch"]);
 		}
 		else
@@ -137,9 +138,9 @@ namespace px
 
 			auto entity = m_entities.create();
 			auto transform = std::make_unique<Transform>();
-			transform->SetPosition(FromVec3Json(reader[name]["position"]));
-			transform->SetRotationOnAllAxis(FromVec3Json(reader[name]["rotation"]));
-			transform->SetScale(FromVec3Json(reader[name]["scale"]));
+			transform->SetPosition(utils::FromVec3Json(reader[name]["position"]));
+			transform->SetRotationOnAllAxis(utils::FromVec3Json(reader[name]["rotation"]));
+			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
 
 			auto render = std::make_unique<px::Render>(m_models, Models::Cube, Shaders::Phong, name);
 			entity.assign<Transformable>(transform);
@@ -310,7 +311,7 @@ namespace px
 						std::string name = "Cube" + std::to_string(m_cubeCreationCounter);
 
 						//Verify that the given name isn't already taken
-						//Doesn't work very well, better with a tree search instead?
+						//Doesn't work very well sometimes as it's a linear search
 						for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 						{
 							if (name != m_entityPicked[i].name)
@@ -523,19 +524,6 @@ namespace px
 			m_camera->ProcessKeyboard(LEFT, dt);
 	}
 
-	//Helper functions for reading/writing json files
-	glm::vec3 Game::FromVec3Json(std::vector<float> values)
-	{
-		glm::vec3 result = { values[0], values[1], values[2] };
-		return result;
-	}
-
-	std::vector<float> Game::ToVec3Json(glm::vec3 values)
-	{
-		std::vector<float> result = { values[0], values[1], values[2] };
-		return result;
-	}
-
 	void Game::WriteSceneData()
 	{
 		//Write scene information to json file
@@ -548,15 +536,15 @@ namespace px
 		}
 
 		data["Camera"]["count"] = 1;
-		data["Camera"]["position"] = ToVec3Json(m_camera->GetPosition());
+		data["Camera"]["position"] = utils::ToVec3Json(m_camera->GetPosition());
 		data["Camera"]["yaw"] = m_camera->GetYaw();
 		data["Camera"]["pitch"] = m_camera->GetPitch();
 
 		for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 		{
-			data[m_entityPicked[i].name]["position"] = ToVec3Json(m_entityPicked[i].position);
-			data[m_entityPicked[i].name]["rotation"] = ToVec3Json(m_entityPicked[i].rotationAngles);
-			data[m_entityPicked[i].name]["scale"] = ToVec3Json(m_entityPicked[i].scale);
+			data[m_entityPicked[i].name]["position"] = utils::ToVec3Json(m_entityPicked[i].position);
+			data[m_entityPicked[i].name]["rotation"] = utils::ToVec3Json(m_entityPicked[i].rotationAngles);
+			data[m_entityPicked[i].name]["scale"] = utils::ToVec3Json(m_entityPicked[i].scale);
 		}
 
 		std::ofstream o("Scripts/Json/scene.json");

@@ -40,8 +40,6 @@ namespace px
 		void InitEntities();
 		void UpdateGUI(double dt);
 		void UpdateCamera(float dt);
-		glm::vec3 FromVec3Json(std::vector<float> values);
-		std::vector<float> ToVec3Json(glm::vec3 values);
 		void WriteSceneData();
 
 	private:

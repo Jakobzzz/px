@@ -158,8 +158,10 @@
     <ClCompile Include="..\imgui-master\imgui.cpp" />
     <ClCompile Include="..\imgui-master\imgui_draw.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Converters.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imguidock.cpp" />
     <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="main.cpp" />
@@ -168,13 +170,16 @@
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="RenderTexture.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="Converters.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Grid.hpp" />
+    <ClInclude Include="GUI.hpp" />
     <ClInclude Include="imguidock.h" />
     <ClInclude Include="imgui_console.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
@@ -187,6 +192,7 @@
     <ClInclude Include="RenderSystem.hpp" />
     <ClInclude Include="RenderTexture.hpp" />
     <ClInclude Include="ResourceIdentifiers.hpp" />
+    <ClInclude Include="Scene.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Transform.hpp" />
     <ClInclude Include="Transformable.hpp" />
