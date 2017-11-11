@@ -88,18 +88,15 @@ namespace px
 		}
 	}
 
-	//This approach isn't the cleanest but I can't figure a way to overcome the static need for callback functions
-	//The info vector can probably be removed now as the scene object is static
-	void Scene::UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, std::vector<PickingInfo>& info)
+	void Scene::UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, bool & picked)
 	{
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
 		//Update entities transformation
-		int i = 0;
 		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
 		{
-			if (name == renderable->object->GetName()) //&& picked
+			if (name == renderable->object->GetName() && picked)
 			{
 				//Apply transform from GUI to picked object
 				transform->transform->SetPosition(position);
@@ -108,13 +105,6 @@ namespace px
 			}
 			else
 				transform->transform->SetTransform();
-
-			info[i].position = transform->transform->GetPosition();
-			info[i].rotationAngles = transform->transform->GetRotationAngles();
-			info[i].scale = transform->transform->GetScale();
-			info[i].world = transform->transform->GetTransform();
-			info[i].name = renderable->object->GetName();
-			i++;
 		}
 	}
 
@@ -167,5 +157,10 @@ namespace px
 	unsigned int Scene::GetEntityCount()
 	{
 		return m_entities.size();
+	}
+
+	EntityManager & Scene::GetEntities()
+	{
+		return m_entities;
 	}
 }

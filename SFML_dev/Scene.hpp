@@ -17,15 +17,6 @@ using namespace entityx;
 
 namespace px
 {
-	struct PickingInfo
-	{
-		glm::mat4 world;
-		glm::vec3 position;
-		glm::vec3 rotationAngles;
-		glm::vec3 scale;
-		std::string name;
-	};
-
 	class Scene : public EntityX
 	{
 	public:
@@ -36,7 +27,7 @@ namespace px
 		void ChangeEntityName(std::string name, std::string newName);
 		void CreateEntity(ModelHolder models, Models::ID modelID, std::string name);
 		void DestroyEntity(std::string name);
-		void UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, std::vector<PickingInfo> & info);
+		void UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, bool & picked);
 		void UpdateSystems(double dt);
 		void WriteSceneData();
 		void DestroyScene();
@@ -44,6 +35,7 @@ namespace px
 	public:
 		std::shared_ptr<Camera> GetCamera();
 		unsigned int GetEntityCount();
+		EntityManager & GetEntities();
 
 	private:
 		EntityManager m_entities;

@@ -35,7 +35,6 @@ namespace px
 		//static void OnMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 	private:
-		static std::vector<PickingInfo> m_entityPicked;
 		static std::unique_ptr<Scene> m_scene;
 		static std::string m_pickedName;
 		static float m_lastX;

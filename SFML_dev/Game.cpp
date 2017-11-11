@@ -24,7 +24,6 @@ namespace px
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
 	std::string Game::m_pickedName;
-	std::vector<PickingInfo> Game::m_entityPicked;
 	std::unique_ptr<Scene> Game::m_scene;
 
 	Game::Game() : m_frameTime(0.f), m_cubeCreationCounter(0)
@@ -123,7 +122,6 @@ namespace px
 
 			glfwPollEvents();
 
-			//RemoveEntity();
 			UpdateGUI(deltaTime);
 			Update((float)deltaTime);
 
@@ -163,8 +161,7 @@ namespace px
 
 	void Game::Update(float dt)
 	{
-		m_entityPicked.resize(m_scene->GetEntityCount());
-		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_entityPicked);
+		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_picked);
 
 		if (m_hovered)
 			UpdateCamera(dt);
@@ -240,11 +237,12 @@ namespace px
 					{
 						std::string name = "Cube" + std::to_string(m_cubeCreationCounter);
 
-						//Verify that the given name isn't already taken
-						//Doesn't work very well sometimes as it's a linear search
-						for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+						ComponentHandle<Transformable> transform;
+						ComponentHandle<Renderable> renderable;
+
+						for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
 						{
-							if (name != m_entityPicked[i].name)
+							if (name != renderable->object->GetName())
 								name = name;
 							else
 							{
@@ -347,10 +345,10 @@ namespace px
 					ImGui::Spacing();
 					ImGui::Text("Direction");
 					ImGui::InputFloat3("Direction", (float*)&m_lightDirection, floatPrecision);
-ImGui::Spacing();
-ImGui::Text("Phong Shading");
-ImGui::SliderFloat("Ambient", &m_ambient, 0.0f, 1.0f);
-ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
+					ImGui::Spacing();
+					ImGui::Text("Phong Shading");
+					ImGui::SliderFloat("Ambient", &m_ambient, 0.0f, 1.0f);
+					ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
 				}
 			}
 			ImGui::EndDock();
@@ -383,30 +381,36 @@ ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
 			ImGui::EndDock();
 
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
-			if (ImGui::BeginDock("Entities"))
+			if (ImGui::BeginDock("Hierarchy"))
 			{
-				ImGui::BeginChild("Hierachy");
-				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+				ImGui::BeginChild("Entities");
+
+				unsigned int i = 0;
+				ComponentHandle<Transformable> transform;
+				ComponentHandle<Renderable> renderable;
+
+				for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
 				{
 					char label[128];
-					sprintf(label, m_entityPicked[i].name.c_str());
+					sprintf(label, renderable->object->GetName().c_str());
 					if (ImGui::Selectable(label, m_selectedEntity == i))
 					{
 						//Give information to GUI about picked object
-						m_pickedName = m_entityPicked[i].name;
+						m_pickedName = renderable->object->GetName();
 
 						//Copy the name to the char vector
 						m_nameChanger.clear(); m_nameChanger.resize(50);
 						for (unsigned int p = 0; p < m_pickedName.size(); p++)
 							m_nameChanger[p] = m_pickedName[p];
 
-						m_scale = m_entityPicked[i].scale;
-						m_position = m_entityPicked[i].position;
-						m_rotationAngles = m_entityPicked[i].rotationAngles;
-						m_picked = true;
-
+						//Give information to GUI about picked object
+						m_scale = transform->transform->GetScale();
+						m_position = transform->transform->GetPosition();
+						m_rotationAngles = transform->transform->GetRotationAngles();
 						m_selectedEntity = i;
+						m_picked = true;
 					}
+					i++;
 				}
 				ImGui::EndChild();
 			}
@@ -482,16 +486,20 @@ ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
 			{
 				Picking::PerformMousePicking(m_scene->GetCamera(), m_lastX - 16, m_lastY - 50);
 
-				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
+				ComponentHandle<Transformable> transform;
+				ComponentHandle<Renderable> renderable;
+
+				unsigned int i = 0;
+				for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
 				{
-					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_entityPicked[i].world))
+					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), transform->transform->GetTransform()))
 					{
 						//Give information to GUI about picked object
 						m_selectedEntity = i;
-						m_pickedName = m_entityPicked[i].name;
-						m_scale = m_entityPicked[i].scale;
-						m_position = m_entityPicked[i].position;
-						m_rotationAngles = m_entityPicked[i].rotationAngles;
+						m_pickedName = renderable->object->GetName();
+						m_scale = transform->transform->GetScale();
+						m_position = transform->transform->GetPosition();
+						m_rotationAngles = transform->transform->GetRotationAngles();
 						m_picked = true;
 
 						//Copy the name to the char vector
