@@ -43,7 +43,7 @@ namespace px
 
 		assert(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress));
 
-		//Make sure ImGui doesn't already have the callbacks when adding new ones
+		//Callbacks
 		glfwSetFramebufferSizeCallback(m_window, OnFrameBufferResizeCallback);
 		glfwSetCursorPosCallback(m_window, OnMouseCallback);
 
@@ -123,7 +123,8 @@ namespace px
 
 			glfwPollEvents();
 
-			UpdateGUI(deltaTime);			
+			//RemoveEntity();
+			UpdateGUI(deltaTime);
 			Update((float)deltaTime);
 
 			//Render IMGUI last
@@ -219,7 +220,7 @@ namespace px
 				{
 					IM_ASSERT(0);
 				}
-				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
+				if (ImGui::MenuItem("Quit", "Escape")) { glfwSetWindowShouldClose(m_window, true); }
 				ImGui::EndMenu();
 			}
 
@@ -254,6 +255,7 @@ namespace px
 
 						m_scene->CreateEntity(m_models, Models::Cube, name);
 					}
+
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
@@ -261,12 +263,28 @@ namespace px
 			ImGui::EndMainMenuBar();
 		}
 
-		//Remove the picked object if delete is pressed
+		//Open popup if delete is pressed && picked
 		if (m_picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)
 		{
-			m_scene->DestroyEntity(m_pickedName);
-			m_cubeCreationCounter = 0;
-			m_picked = false;
+			ImGui::OpenPopup("Delete?");
+		}
+
+		//Remove the picked entity if the user agrees
+		if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+		{
+			ImGui::Text("Are you sure you want to delete this item?\nThis action can't be undone.\n\n");
+			ImGui::Separator();
+
+			if (ImGui::Button("Yes", ImVec2(120, 0))) 
+			{ 
+				m_scene->DestroyEntity(m_pickedName);
+				m_cubeCreationCounter = 0;
+				m_picked = false;
+				ImGui::CloseCurrentPopup(); 
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("No", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+			ImGui::EndPopup();
 		}
 
 		//Camera position overlay at the bottom of the scene
@@ -329,11 +347,11 @@ namespace px
 					ImGui::Spacing();
 					ImGui::Text("Direction");
 					ImGui::InputFloat3("Direction", (float*)&m_lightDirection, floatPrecision);
-					ImGui::Spacing();
-					ImGui::Text("Phong Shading");
-					ImGui::SliderFloat("Ambient", &m_ambient, 0.0f, 1.0f);
-					ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
-				}				
+ImGui::Spacing();
+ImGui::Text("Phong Shading");
+ImGui::SliderFloat("Ambient", &m_ambient, 0.0f, 1.0f);
+ImGui::SliderFloat("Specular", &m_specular, 0.0f, 1.0f);
+				}
 			}
 			ImGui::EndDock();
 
@@ -363,7 +381,7 @@ namespace px
 				}
 			}
 			ImGui::EndDock();
-			
+
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Entities"))
 			{
@@ -387,7 +405,7 @@ namespace px
 						m_rotationAngles = m_entityPicked[i].rotationAngles;
 						m_picked = true;
 
-						m_selectedEntity = i;						
+						m_selectedEntity = i;
 					}
 				}
 				ImGui::EndChild();
@@ -464,7 +482,6 @@ namespace px
 			{
 				Picking::PerformMousePicking(m_scene->GetCamera(), m_lastX - 16, m_lastY - 50);
 
-				//TODO: change so the hierachy list also updates when picking an object!
 				for (unsigned int i = 0; i < m_entityPicked.size(); i++)
 				{
 					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), m_entityPicked[i].world))
@@ -492,29 +509,29 @@ namespace px
 		}
 	}
 
-	/*void Game::OnMouseScrollCallback(GLFWwindow * window, double xoffset, double yoffset)
-	{
-		float fov = m_camera->GetFov();
+	//void Game::OnMouseScrollCallback(GLFWwindow * window, double xoffset, double yoffset)
+	//{
+	//	float fov = m_scene->GetCamera()->GetFov();
 
-		if (m_hovered)
-		{
-			if (fov >= 1.0f && fov <= 90.0f)
-			{
-				fov -= (float)(5.0 * yoffset);
-				m_camera->SetFov(fov);
-			}
+	//	if (m_hovered)
+	//	{
+	//		if (fov >= 1.0f && fov <= 90.0f)
+	//		{
+	//			fov -= (float)(5.0 * yoffset);
+	//			m_scene->GetCamera()->SetFov(fov);
+	//		}
 
-			if (fov <= 1.0f)
-			{
-				fov = 1.0f;
-				m_camera->SetFov(fov);
-			}
+	//		if (fov <= 1.0f)
+	//		{
+	//			fov = 1.0f;
+	//			m_scene->GetCamera()->SetFov(fov);
+	//		}
 
-			if (fov >= 90.0f)
-			{
-				fov = 90.0f;
-				m_camera->SetFov(fov);
-			}
-		}
-	}*/
+	//		if (fov >= 90.0f)
+	//		{
+	//			fov = 90.0f;
+	//			m_scene->GetCamera()->SetFov(fov);
+	//		}
+	//	}
+	//}
 }

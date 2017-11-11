@@ -3,13 +3,6 @@
 #include <json.hpp>
 #include <fstream>
 
-//Systems
-#include "RenderSystem.hpp"
-
-//Components
-#include "Transformable.hpp"
-#include "Renderable.hpp"
-
 using json = nlohmann::json;
 
 namespace px
@@ -96,7 +89,7 @@ namespace px
 	}
 
 	//This approach isn't the cleanest but I can't figure a way to overcome the static need for callback functions
-	//Must fix this in the future!
+	//The info vector can probably be removed now as the scene object is static
 	void Scene::UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, std::vector<PickingInfo>& info)
 	{
 		ComponentHandle<Transformable> transform;

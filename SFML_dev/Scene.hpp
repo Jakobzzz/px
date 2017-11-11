@@ -6,6 +6,13 @@
 #include "Model.hpp"
 #include "ResourceIdentifiers.hpp"
 
+//Systems
+#include "RenderSystem.hpp"
+
+//Components
+#include "Transformable.hpp"
+#include "Renderable.hpp"
+
 using namespace entityx;
 
 namespace px

@@ -54,14 +54,7 @@ namespace px
 					if (ImGui::MenuItem("Show Position", NULL, &m_showCameraPosition)) {}
 					ImGui::EndMenu();
 				}
-
-
-
-
 			}
-
-
 		}
-
 	}
 }
