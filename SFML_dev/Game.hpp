@@ -44,6 +44,7 @@ namespace px
 		static bool m_showFPS;
 		static bool m_showCameraPosition;
 		static bool m_hovered;
+		static bool m_showDiagnostics;
 		static glm::vec3 m_rotationAngles;
 		static glm::vec3 m_position;
 		static glm::vec3 m_scale;

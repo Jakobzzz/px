@@ -18,6 +18,7 @@ namespace px
 	bool Game::m_showFPS = false;
 	bool Game::m_showCameraPosition = true;
 	bool Game::m_picked = false;
+	bool Game::m_showDiagnostics = false;
 	int Game::m_selectedEntity = 0;
 	std::vector<char> Game::m_nameChanger;
 	glm::vec3 Game::m_rotationAngles;
@@ -60,7 +61,7 @@ namespace px
 
 		//Lua functions
 		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_scene->GetCamera()->SetPosition(glm::vec3(x, y, z)); });
-		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
+		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });		
 	}
 
 	Game::~Game()
@@ -226,6 +227,7 @@ namespace px
 				if (ImGui::MenuItem("Show Grid", NULL, &m_showGrid)) {}
 				if (ImGui::MenuItem("Show FPS", NULL, &m_showFPS)) {}
 				if (ImGui::MenuItem("Show Position", NULL, &m_showCameraPosition)) {}
+				if (ImGui::MenuItem("Show Diagnostics", NULL, &m_showDiagnostics)) {}
 				ImGui::EndMenu();
 			}
 
@@ -300,6 +302,29 @@ namespace px
 			ImGui::End();		
 		}
 		
+		//Diagnostics overlay on left of the screen
+		if (m_showDiagnostics)
+		{
+			ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 1370, WINDOW_HEIGHT - 840));
+			if (!ImGui::Begin("Diagnostics overlay", &m_showDiagnostics, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+				ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+			{
+				ImGui::End();
+				return;
+			}
+
+			ImGui::TextColored(ImVec4(0.f, 1.0f, 0.0f, 1.0f), "OpenGL context:\nVersion: %s\nGLSL Version: %s\nVendor: %s\nRenderer: %s\n",
+				glGetString(GL_VERSION),
+				glGetString(GL_SHADING_LANGUAGE_VERSION),
+				glGetString(GL_VENDOR),
+				glGetString(GL_RENDERER)
+			);
+
+			//TODO: calculate number of triangles/indices/objects culled...
+
+			ImGui::End();
+		}
+
 		//FPS overlay on right of the screen
 		if (m_showFPS)
 		{
@@ -355,7 +380,7 @@ namespace px
 
 			ImGui::SetNextDock(ImGuiDockSlot_Tab);
 			if (ImGui::BeginDock("Inspector"))
-			{
+			{		 
 				if (m_picked)
 				{
 					//Change name of entity upon completion
