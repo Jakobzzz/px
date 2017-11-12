@@ -24,6 +24,7 @@ namespace px
 	glm::vec3 Game::m_rotationAngles;
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
+	glm::vec3 Game::m_color;
 	std::string Game::m_pickedName;
 	std::unique_ptr<Scene> Game::m_scene;
 
@@ -61,7 +62,7 @@ namespace px
 
 		//Lua functions
 		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_scene->GetCamera()->SetPosition(glm::vec3(x, y, z)); });
-		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });		
+		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
 	}
 
 	Game::~Game()
@@ -162,7 +163,8 @@ namespace px
 
 	void Game::Update(float dt)
 	{
-		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_picked);
+		//Consider using a struct object as parameter instead?
+		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_color, m_picked);
 
 		if (m_hovered)
 			UpdateCamera(dt);
@@ -320,8 +322,6 @@ namespace px
 				glGetString(GL_RENDERER)
 			);
 
-			//TODO: calculate number of triangles/indices/objects culled...
-
 			ImGui::End();
 		}
 
@@ -388,7 +388,6 @@ namespace px
 					{
 						m_scene->ChangeEntityName(m_pickedName, m_nameChanger.data());
 					}
-
 					ImGui::Spacing();
 
 					ImGui::SetNextTreeNodeOpen(true, 2);
@@ -401,10 +400,18 @@ namespace px
 						ImGui::Spacing();
 						ImGui::InputFloat3("Scale", (float*)&m_scale, floatPrecision);
 					}
+					ImGui::Spacing();
+
+					ImGui::SetNextTreeNodeOpen(true, 2);
+					if (ImGui::CollapsingHeader("Material"))
+					{
+						ImGui::Spacing();
+						ImGui::ColorEdit3("Color", &m_color[0]);
+					}
 				}
 			}
 			ImGui::EndDock();
-
+			
 			ImGui::SetNextDock(ImGuiDockSlot_Left);
 			if (ImGui::BeginDock("Hierarchy"))
 			{
@@ -422,6 +429,7 @@ namespace px
 					{
 						//Give information to GUI about picked object
 						m_pickedName = renderable->object->GetName();
+						m_color = renderable->object->GetColor();
 
 						//Copy the name to the char vector
 						m_nameChanger.clear(); m_nameChanger.resize(50);
@@ -517,11 +525,12 @@ namespace px
 				unsigned int i = 0;
 				for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
 				{
-					if (Picking::RayOBBIntersection(glm::vec3(-1.f), glm::vec3(1.f), transform->transform->GetTransform()))
+					if (Picking::RayOBBIntersection(glm::vec3(1.f), transform->transform->GetTransform()))
 					{
 						//Give information to GUI about picked object
 						m_selectedEntity = i;
 						m_pickedName = renderable->object->GetName();
+						m_color = renderable->object->GetColor();
 						m_scale = transform->transform->GetScale();
 						m_position = transform->transform->GetPosition();
 						m_rotationAngles = transform->transform->GetRotationAngles();

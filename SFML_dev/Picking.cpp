@@ -47,10 +47,10 @@ namespace px
 		b = ((m_direction.x * m_origin.x) + (m_direction.y * m_origin.y) + (m_direction.z * m_origin.z)) * 2.0f;
 		c = ((m_origin.x * m_origin.x) + (m_origin.y * m_origin.y) + (m_origin.z * m_origin.z)) - (radius * radius);
 
-		// Find the discriminant.
+		//Find the discriminant.
 		discriminant = (b * b) - (4 * a * c);
 
-		// if discriminant is negative the picking ray missed the sphere, otherwise it intersected the sphere.
+		//if discriminant is negative the picking ray missed the sphere, otherwise it intersected the sphere.
 		if (discriminant < 0.0f)
 		{
 			return false;
@@ -59,9 +59,10 @@ namespace px
 		return true;
 	}
 
-	bool Picking::RayOBBIntersection(glm::vec3 aabb_min, glm::vec3 aabb_max, glm::mat4 modelMatrix)
+	//Half-lengths are the positive distance from the center to a box face
+	bool Picking::RayOBBIntersection(glm::vec3 halfLengths, glm::mat4 modelMatrix)
 	{
-		//Intersection based on the method described in the book Real-Time Rendering
+		//Intersection based on the SLABS-method described in the book Real-Time Rendering
 		float tMin = -INFINITY;
 		float tMax = INFINITY;
 
@@ -70,6 +71,7 @@ namespace px
 
 		//Test intersection with the 2 planes perpendicular to the OBB's X axis
 		{
+			//Normalize the axis?
 			glm::vec3 axis_x(modelMatrix[0].x, modelMatrix[0].y, modelMatrix[0].z);
 			float e = glm::dot(axis_x, delta);
 			float f = glm::dot(m_direction, axis_x);
@@ -77,8 +79,8 @@ namespace px
 			if (fabs(f) > EPSILON)
 			{
 				//Intersection with "left" and "right" plane
-				float t1 = (e + aabb_min.x) / f;
-				float t2 = (e + aabb_max.x) / f;
+				float t1 = (e + halfLengths.x) / f;
+				float t2 = (e - halfLengths.x) / f;
 
 				//t1 and t2 now contain distances betwen ray origin and ray-plane intersections
 				//We want t1 to represent the nearest intersection, thus if it's not the case then we will swap
@@ -103,7 +105,7 @@ namespace px
 			}
 			else
 			{
-				if (-e + aabb_min.x > 0.0f || -e + aabb_max.x < 0.0f)
+				if (-e - halfLengths.x > 0.0f || -e + halfLengths.x < 0.0f)
 					return false;
 			}
 		}
@@ -116,8 +118,8 @@ namespace px
 
 			if (fabs(f) > EPSILON) 
 			{
-				float t1 = (e + aabb_min.y) / f;
-				float t2 = (e + aabb_max.y) / f;
+				float t1 = (e + halfLengths.y) / f;
+				float t2 = (e - halfLengths.y) / f;
 
 				if (t1 > t2) 
 				{ 
@@ -137,7 +139,7 @@ namespace px
 			}
 			else 
 			{
-				if (-e + aabb_min.y > 0.0f || -e + aabb_max.y < 0.0f)
+				if (-e - halfLengths.y > 0.0f || -e + halfLengths.y < 0.0f)
 					return false;
 			}
 		}
@@ -151,8 +153,8 @@ namespace px
 			if (fabs(f) > EPSILON) 
 			{
 
-				float t1 = (e + aabb_min.z) / f;
-				float t2 = (e + aabb_max.z) / f;
+				float t1 = (e + halfLengths.z) / f;
+				float t2 = (e - halfLengths.z) / f;
 
 				if (t1 > t2) 
 				{ 
@@ -172,7 +174,7 @@ namespace px
 			}
 			else 
 			{
-				if (-e + aabb_min.z > 0.0f || -e + aabb_max.z < 0.0f)
+				if (-e - halfLengths.z > 0.0f || -e + halfLengths.z < 0.0f)
 					return false;
 			}
 		}

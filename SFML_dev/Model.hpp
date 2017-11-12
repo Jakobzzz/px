@@ -17,6 +17,12 @@ namespace px
 		void Draw(Identifier id, Shaders::ID shaderID);
 		void Destroy(Identifier id);
 
+	public:
+		void SetColor(Identifier id, glm::vec3 color);
+
+	public:
+		glm::vec3 GetColor(Identifier id);
+
 	private:
 		void ProcessNode(Identifier id, aiNode* node, const aiScene* scene);
 		std::unique_ptr<Mesh> ProcessMesh(Identifier id, aiMesh* mesh, const aiScene* scene);
@@ -54,6 +60,28 @@ namespace px
 
 		for (auto & mesh : found->second)
 			mesh->Draw(shaderID);
+	}
+
+	template <typename Identifier>
+	inline void Model<Identifier>::SetColor(Identifier id, glm::vec3 color) //This need some kind of index for child nodes
+	{
+		auto found = m_models.find(id);
+		assert(found != m_models.end());
+
+		for (auto & mesh : found->second)
+			mesh->SetColor(color);
+	}
+
+	template <typename Identifier>
+	inline glm::vec3 Model<Identifier>::GetColor(Identifier id) //This need some kind of index for child nodes
+	{
+		auto found = m_models.find(id);
+		assert(found != m_models.end());
+
+		for (auto & mesh : found->second)
+			return mesh->GetColor();
+
+		return glm::vec3();
 	}
 
 	template <typename Identifier>

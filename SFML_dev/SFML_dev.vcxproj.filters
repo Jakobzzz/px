@@ -35,9 +35,6 @@
     <Filter Include="Utils\Debug">
       <UniqueIdentifier>{1bfc8a74-1ba2-4fdb-90aa-cb1987ddae11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\GUI">
-      <UniqueIdentifier>{0d85d3ad-da88-40d2-bdd7-0f198a63d384}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphics\Scene">
       <UniqueIdentifier>{6f43df85-d839-4357-b2d4-9f40c4a5bd48}</UniqueIdentifier>
     </Filter>
@@ -86,9 +83,6 @@
     </ClCompile>
     <ClCompile Include="RenderTexture.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI.cpp">
-      <Filter>Graphics\GUI</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Graphics\Scene</Filter>
@@ -154,9 +148,6 @@
     </ClInclude>
     <ClInclude Include="Converters.hpp">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI.hpp">
-      <Filter>Graphics\GUI</Filter>
     </ClInclude>
     <ClInclude Include="Scene.hpp">
       <Filter>Graphics\Scene</Filter>

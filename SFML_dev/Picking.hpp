@@ -14,7 +14,7 @@ namespace px
 	public:
 		static void PerformMousePicking(std::shared_ptr<Camera> & camera, float x, float y);
 		static bool RaySphereIntersection(glm::mat4 modelMatrix, float radius);
-		static bool RayOBBIntersection(glm::vec3 aabb_min, glm::vec3 aabb_max, glm::mat4 modelMatrix);
+		static bool RayOBBIntersection(glm::vec3 halfLengths, glm::mat4 modelMatrix);
 
 	public:
 		static glm::vec3 GetPickingRay();

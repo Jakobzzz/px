@@ -48,6 +48,7 @@ namespace px
 		static glm::vec3 m_rotationAngles;
 		static glm::vec3 m_position;
 		static glm::vec3 m_scale;
+		static glm::vec3 m_color;
 		static int m_selectedEntity;
 		static std::vector<char> m_nameChanger;
 			

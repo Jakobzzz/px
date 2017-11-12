@@ -23,6 +23,16 @@ namespace px
 		m_name = name;
 	}
 
+	void Render::SetColor(glm::vec3 color)
+	{
+		m_model->SetColor(m_modelID, color);
+	}
+
+	glm::vec3 Render::GetColor() const
+	{
+		return m_model->GetColor(m_modelID);
+	}
+
 	Shaders::ID Render::GetShader() const
 	{
 		return m_shader;

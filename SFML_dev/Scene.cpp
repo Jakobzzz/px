@@ -88,7 +88,7 @@ namespace px
 		}
 	}
 
-	void Scene::UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, bool & picked)
+	void Scene::UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, glm::vec3 & color, bool & picked)
 	{
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
@@ -98,7 +98,8 @@ namespace px
 		{
 			if (name == renderable->object->GetName() && picked)
 			{
-				//Apply transform from GUI to picked object
+				//Apply changes from GUI to picked object
+				renderable->object->SetColor(color);
 				transform->transform->SetPosition(position);
 				transform->transform->SetRotationOnAllAxis(rotation);
 				transform->transform->SetScale(scale);

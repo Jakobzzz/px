@@ -9,7 +9,6 @@ namespace px
 
 	void Mesh::Draw(Shaders::ID id)
 	{
-		//Disabled for picking highlight purposes
 		Shader::SetFloat3v(id, "color", m_color);
 
 		glBindVertexArray(m_VAO);
@@ -22,6 +21,16 @@ namespace px
 		glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);
 		glDeleteBuffers(1, &m_EBO);
+	}
+
+	void Mesh::SetColor(glm::vec3 color)
+	{
+		m_color = color;
+	}
+
+	glm::vec3 Mesh::GetColor()
+	{
+		return m_color;
 	}
 
 	void Mesh::SetupMesh()

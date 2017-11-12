@@ -21,6 +21,12 @@ namespace px
 		void Draw(Shaders::ID id);
 		void Destroy();
 
+	public:
+		void SetColor(glm::vec3 color);
+
+	public:
+		glm::vec3 GetColor();
+
 	private:
 		void SetupMesh();
 

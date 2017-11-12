@@ -161,7 +161,6 @@
     <ClCompile Include="Converters.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imguidock.cpp" />
     <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="main.cpp" />
@@ -179,7 +178,6 @@
     <ClInclude Include="Converters.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Grid.hpp" />
-    <ClInclude Include="GUI.hpp" />
     <ClInclude Include="imguidock.h" />
     <ClInclude Include="imgui_console.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />

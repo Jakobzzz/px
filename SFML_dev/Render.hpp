@@ -16,8 +16,10 @@ namespace px
 	public:
 		void SetShader(Shaders::ID shader);
 		void SetName(std::string name);
+		void SetColor(glm::vec3 color);
 
 	public:
+		glm::vec3 GetColor() const;
 		Shaders::ID GetShader() const;
 		Models::ID GetModel() const;
 		std::string GetName() const;
