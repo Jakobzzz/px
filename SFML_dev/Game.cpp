@@ -78,6 +78,9 @@ namespace px
 
 		material.name = "Leaves"; material.color = glm::vec3(0.7f);
 		m_materials.push_back(material);
+
+		for (unsigned int i = 0; i < m_materials.size(); i++)
+			m_materialNames.push_back(m_materials[i].name);
 	}
 
 	Game::~Game()
@@ -423,11 +426,9 @@ namespace px
 					{
 						ImGui::Spacing();
 
-						//TODO: find a way to retrieve only the name entries of the materials vector
-						//Number of combos depends on the number of materials for a model
-						/*static int item2 = 0;
-						ImGui::Combo("1", &item2, &m_materials[0].name, m_materials.size());*/
-						//ImGui::ColorEdit3("Color", &m_color[0]);
+						//TODO: Number of combos should depend on the number of materials for a model
+						static int item2 = 0;
+						ImGui::Combo("1", &item2, m_materialNames.data(), m_materialNames.size());
 					}
 				}
 			}

@@ -67,6 +67,7 @@ namespace px
 		bool* m_open;
 		float m_frameTime;
 		GLFWwindow* m_window;
+		std::vector<char*> m_materialNames;
 		std::unique_ptr<Grid> m_grid;
 		std::unique_ptr<RenderTexture> m_frameBuffer;
 		ModelHolder m_models;
