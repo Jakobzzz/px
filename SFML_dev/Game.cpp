@@ -8,6 +8,9 @@
 #include <iostream>
 #include <functional>
 
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
+
 namespace px
 {
 	//Static functions
@@ -383,6 +386,7 @@ namespace px
 			{		 
 				if (m_picked)
 				{
+					//TODO: make sure that entities can't have the same name!
 					//Change name of entity upon completion
 					if (ImGui::InputText("Name", m_nameChanger.data(), m_nameChanger.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 					{
@@ -460,6 +464,22 @@ namespace px
 			if (ImGui::BeginDock("Console"))
 			{
 				gameConsole.Draw();
+			}
+			ImGui::EndDock();
+
+			ImGui::SetNextDock(ImGuiDockSlot_Tab);
+			if (ImGui::BeginDock("Assets"))
+			{
+				if (ImGui::TreeNode("Materials")) 
+				{
+					if (ImGui::TreeNode("Material001"))
+					{
+						glm::vec3 color = glm::vec3(0.5f, 0.f, 0.f);
+						ImGui::ColorEdit3("Color", &color[0]);
+						ImGui::TreePop();
+					}
+					ImGui::TreePop(); 
+				}   
 			}
 			ImGui::EndDock();
 
@@ -546,6 +566,8 @@ namespace px
 					}
 					else
 						m_picked = false;
+
+					i++;
 				}
 			}
 		}
