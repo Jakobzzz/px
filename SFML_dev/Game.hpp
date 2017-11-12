@@ -35,8 +35,17 @@ namespace px
 		//static void OnMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 	private:
+		struct Material
+		{
+			char* name;
+			glm::vec3 color;
+		};
+
+	private:
 		static std::unique_ptr<Scene> m_scene;
-		static std::string m_pickedName;
+
+		//GUI related
+		static int m_selectedEntity;
 		static float m_lastX;
 		static float m_lastY;
 		static bool m_picked;
@@ -49,8 +58,9 @@ namespace px
 		static glm::vec3 m_position;
 		static glm::vec3 m_scale;
 		static glm::vec3 m_color;
-		static int m_selectedEntity;
+		static std::string m_pickedName;
 		static std::vector<char> m_nameChanger;
+		static std::vector<Material> m_materials;
 			
 	private:
 		int m_cubeCreationCounter;

@@ -24,6 +24,7 @@ namespace px
 	bool Game::m_showDiagnostics = false;
 	int Game::m_selectedEntity = 0;
 	std::vector<char> Game::m_nameChanger;
+	std::vector<Game::Material> Game::m_materials; //Test vector for materials
 	glm::vec3 Game::m_rotationAngles;
 	glm::vec3 Game::m_position;
 	glm::vec3 Game::m_scale;
@@ -66,6 +67,17 @@ namespace px
 		//Lua functions
 		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_scene->GetCamera()->SetPosition(glm::vec3(x, y, z)); });
 		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
+
+		//Materials test
+		Material material;
+		material.name = "Cube"; material.color = glm::vec3(0.5f);
+		m_materials.push_back(material);
+
+		material.name = "Trunk"; material.color = glm::vec3(0.1f);
+		m_materials.push_back(material);
+
+		material.name = "Leaves"; material.color = glm::vec3(0.7f);
+		m_materials.push_back(material);
 	}
 
 	Game::~Game()
@@ -405,12 +417,17 @@ namespace px
 						ImGui::InputFloat3("Scale", (float*)&m_scale, floatPrecision);
 					}
 					ImGui::Spacing();
-
+				
 					ImGui::SetNextTreeNodeOpen(true, 2);
 					if (ImGui::CollapsingHeader("Material"))
 					{
 						ImGui::Spacing();
-						ImGui::ColorEdit3("Color", &m_color[0]);
+
+						//TODO: find a way to retrieve only the name entries of the materials vector
+						//Number of combos depends on the number of materials for a model
+						/*static int item2 = 0;
+						ImGui::Combo("1", &item2, &m_materials[0].name, m_materials.size());*/
+						//ImGui::ColorEdit3("Color", &m_color[0]);
 					}
 				}
 			}
@@ -472,14 +489,16 @@ namespace px
 			{
 				if (ImGui::TreeNode("Materials")) 
 				{
-					if (ImGui::TreeNode("Material001"))
+					for (unsigned int i = 0; i < m_materials.size(); i++)
 					{
-						glm::vec3 color = glm::vec3(0.5f, 0.f, 0.f);
-						ImGui::ColorEdit3("Color", &color[0]);
-						ImGui::TreePop();
+						if (ImGui::TreeNode(m_materials[i].name))
+						{
+							ImGui::ColorEdit3("Color", &m_materials[i].color[0]);
+							ImGui::TreePop();
+						}
 					}
-					ImGui::TreePop(); 
-				}   
+					ImGui::TreePop();
+				}
 			}
 			ImGui::EndDock();
 
