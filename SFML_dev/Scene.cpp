@@ -5,6 +5,8 @@
 
 using json = nlohmann::json;
 
+//TODO: modify this class for pickable component
+
 namespace px
 {
 	Scene::Scene() : m_entities(m_events), m_systems(m_entities, m_events)
@@ -26,20 +28,30 @@ namespace px
 		else
 			m_camera = std::make_shared<Camera>();
 
+		//Physics
+		Physics::Init(m_camera);
+
 		//Entities
 		for (unsigned int i = 0; i < reader["Scene"]["count"]; i++)
 		{
 			std::string name = reader["Scene"]["names"][i];
 
+			//Transform component
 			auto entity = m_entities.create();
 			auto transform = std::make_unique<Transform>();
 			transform->SetPosition(utils::FromVec3Json(reader[name]["position"]));
 			transform->SetRotationOnAllAxis(utils::FromVec3Json(reader[name]["rotation"]));
 			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
 
-			auto render = std::make_unique<px::Render>(models, Models::Cube, Shaders::Phong, name); //Only cube models right now
-			entity.assign<Transformable>(transform);
+			//Picking component
+			auto pickable = std::make_unique<px::PickingBody>(PickingType::Box, utils::FromVec3Json(reader[name]["position"]),
+				utils::FromVec3Json(reader[name]["scale"]), transform->GetOrientation());
+			entity.assign<Pickable>(pickable);
+
+			//Render component
+			auto render = std::make_unique<px::Render>(models, Models::Cube, Shaders::Phong, name); //Only cube models right now;
 			entity.assign<Renderable>(render);
+			entity.assign<Transformable>(transform);
 		}
 
 		//Systems
@@ -74,11 +86,10 @@ namespace px
 
 	void Scene::DestroyEntity(std::string name)
 	{
-		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
 		//Remove entity which corresponds to the name
-		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+		for (Entity & entity : m_entities.entities_with_components(renderable))
 		{
 			if (name == renderable->object->GetName())
 			{
@@ -92,9 +103,10 @@ namespace px
 	{
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
+		ComponentHandle<Pickable> pickable;
 
 		//Update entities transformation
-		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+		for (Entity & entity : m_entities.entities_with_components(transform, renderable, pickable))
 		{
 			if (name == renderable->object->GetName() && picked)
 			{
@@ -103,6 +115,7 @@ namespace px
 				transform->transform->SetPosition(position);
 				transform->transform->SetRotationOnAllAxis(rotation);
 				transform->transform->SetScale(scale);
+				pickable->object->SetTransform(position, scale, transform->transform->GetOrientation());
 			}
 			else
 				transform->transform->SetTransform();
@@ -146,8 +159,13 @@ namespace px
 
 	void Scene::DestroyScene()
 	{
-		for (Entity & entity : m_entities.entities_with_components<Transformable, Renderable>())
+		ComponentHandle<Pickable> pickable;
+
+		for (Entity & entity : m_entities.entities_with_components(pickable))
+		{
+			pickable->object->DestroyBody();
 			entity.destroy();
+		}
 	}
 
 	std::shared_ptr<Camera> Scene::GetCamera()

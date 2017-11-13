@@ -12,6 +12,7 @@
 //Components
 #include "Transformable.hpp"
 #include "Renderable.hpp"
+#include "Pickable.hpp"
 
 using namespace entityx;
 

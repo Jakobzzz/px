@@ -71,7 +71,6 @@ namespace px
 
 		//Test intersection with the 2 planes perpendicular to the OBB's X axis
 		{
-			//Normalize the axis?
 			glm::vec3 axis_x(modelMatrix[0].x, modelMatrix[0].y, modelMatrix[0].z);
 			float e = glm::dot(axis_x, delta);
 			float f = glm::dot(m_direction, axis_x);

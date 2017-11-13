@@ -87,13 +87,7 @@ namespace px
 	{
 		m_scene->WriteSceneData();
 		m_scene->DestroyScene();
-
 		m_models->Destroy(Models::Cube);
-
-		Physics::m_dynamicsWorld->removeRigidBody(fallRigidBody);
-		delete fallRigidBody->getMotionState();
-		delete fallRigidBody;
-
 		Physics::Release();
 		ImGui_ImplGlfwGL3_Shutdown();
 		glfwTerminate();
@@ -121,17 +115,6 @@ namespace px
 		m_scene->LoadScene(m_models);
 		m_frameBuffer = std::make_unique<RenderTexture>();
 		m_grid = std::make_unique<Grid>(m_scene->GetCamera());
-		Physics::Init(m_scene->GetCamera());
-
-		//Add rigidbody for test
-		fallShape = new btSphereShape(1);
-		fallMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 10, 0)));
-		btScalar mass = 1;
-		btVector3 fallInertia(0, 0, 0);
-		fallShape->calculateLocalInertia(mass, fallInertia);
-		btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
-		fallRigidBody = new btRigidBody(fallRigidBodyCI);
-		Physics::m_dynamicsWorld->addRigidBody(fallRigidBody);
 
 		//Lightning
 		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f); m_ambient = 0.3f; m_specular = 0.2f;

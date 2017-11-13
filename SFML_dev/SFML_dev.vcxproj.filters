@@ -99,6 +99,9 @@
     <ClCompile Include="Physics.cpp">
       <Filter>Utils\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="PickingBody.cpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.hpp">
@@ -166,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="Physics.hpp">
       <Filter>Utils\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PickingBody.hpp">
+      <Filter>Graphics\Component-Related</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickable.hpp">
+      <Filter>Graphics\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,6 @@
 #include "Grid.hpp"
 #include "RenderTexture.hpp"
 #include "Scene.hpp"
-#include "Physics.hpp"
 
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -72,11 +71,6 @@ namespace px
 		std::unique_ptr<Grid> m_grid;
 		std::unique_ptr<RenderTexture> m_frameBuffer;
 		ModelHolder m_models;
-
-		//Physics
-		btCollisionShape* fallShape;
-		btDefaultMotionState* fallMotionState;
-		btRigidBody* fallRigidBody;
 
 	private:
 		//Lightning variables
