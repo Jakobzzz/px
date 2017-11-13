@@ -38,6 +38,9 @@
     <Filter Include="Graphics\Scene">
       <UniqueIdentifier>{6f43df85-d839-4357-b2d4-9f40c4a5bd48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\Physics">
+      <UniqueIdentifier>{27831ad8-5a29-412d-96fd-c844567c891e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -89,6 +92,12 @@
     </ClCompile>
     <ClCompile Include="Converters.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="BulletDebugDraw.cpp">
+      <Filter>Utils\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Utils\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,6 +161,12 @@
     <ClInclude Include="Scene.hpp">
       <Filter>Graphics\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="BulletDebugDraw.hpp">
+      <Filter>Utils\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.hpp">
+      <Filter>Utils\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="triangle.fragment">
@@ -164,6 +179,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="grid.fragment">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bulletDebug.vertex">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="bulletDebug.fragment">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

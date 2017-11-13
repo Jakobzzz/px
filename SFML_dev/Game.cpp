@@ -89,6 +89,12 @@ namespace px
 		m_scene->DestroyScene();
 
 		m_models->Destroy(Models::Cube);
+
+		Physics::m_dynamicsWorld->removeRigidBody(fallRigidBody);
+		delete fallRigidBody->getMotionState();
+		delete fallRigidBody;
+
+		Physics::Release();
 		ImGui_ImplGlfwGL3_Shutdown();
 		glfwTerminate();
 	}
@@ -97,6 +103,7 @@ namespace px
 	{
 		Shader::LoadShaders(Shaders::Phong, "triangle.vertex", "triangle.fragment");
 		Shader::LoadShaders(Shaders::Grid, "grid.vertex", "grid.fragment");
+		Shader::LoadShaders(Shaders::Debug, "bulletDebug.vertex", "bulletDebug.fragment");
 	}
 
 	void Game::LoadModels()
@@ -114,6 +121,17 @@ namespace px
 		m_scene->LoadScene(m_models);
 		m_frameBuffer = std::make_unique<RenderTexture>();
 		m_grid = std::make_unique<Grid>(m_scene->GetCamera());
+		Physics::Init(m_scene->GetCamera());
+
+		//Add rigidbody for test
+		fallShape = new btSphereShape(1);
+		fallMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 10, 0)));
+		btScalar mass = 1;
+		btVector3 fallInertia(0, 0, 0);
+		fallShape->calculateLocalInertia(mass, fallInertia);
+		btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
+		fallRigidBody = new btRigidBody(fallRigidBodyCI);
+		Physics::m_dynamicsWorld->addRigidBody(fallRigidBody);
 
 		//Lightning
 		m_lightDirection = glm::vec3(-0.2f, -1.0f, -0.3f); m_ambient = 0.3f; m_specular = 0.2f;
@@ -142,6 +160,7 @@ namespace px
 
 			glfwPollEvents();
 
+			//Physics::Update();
 			UpdateGUI(deltaTime);
 			Update((float)deltaTime);
 
@@ -172,6 +191,8 @@ namespace px
 
 		//Update systems
 		m_scene->UpdateSystems(dt);
+
+		Physics::DrawDebug();
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
@@ -428,7 +449,11 @@ namespace px
 
 						//TODO: Number of combos should depend on the number of materials for a model
 						static int item2 = 0;
-						ImGui::Combo("1", &item2, m_materialNames.data(), m_materialNames.size());
+						ImGui::Combo("1", &item2, m_materialNames.data(), m_materialNames.size()); //Callback function upon picking an item?
+
+						//For now...
+						//Assign color from picked material
+						m_color = m_materials[item2].color;
 					}
 				}
 			}

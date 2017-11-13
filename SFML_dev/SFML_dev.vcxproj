@@ -73,8 +73,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(SolutionDir)\json;$(SolutionDir)\stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(SolutionDir)\json;$(SolutionDir)\stb;$(SolutionDir)\bullet\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(SolutionDir)\bullet\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,8 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(SolutionDir)\json;$(SolutionDir)\stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\glm;$(SolutionDir)\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)\glad\include;$(SolutionDir)\Assimp\include;$(SolutionDir)\imgui-master;$(SolutionDir)\entityx-1.1.2;$(SolutionDir)\sol;$(SolutionDir)\lua\include;$(SolutionDir)\json;$(SolutionDir)\stb;$(SolutionDir)\bullet\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)\Assimp\lib;$(SolutionDir)\entityx-1.1.2\build\Debug;$(SolutionDir)\lua\lib;$(SolutionDir)\bullet\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -133,7 +133,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;entityx-d.lib;lua53.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,6 +157,7 @@
     <ClCompile Include="..\glad\src\glad.c" />
     <ClCompile Include="..\imgui-master\imgui.cpp" />
     <ClCompile Include="..\imgui-master\imgui_draw.cpp" />
+    <ClCompile Include="BulletDebugDraw.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Converters.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Picking.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
@@ -174,6 +176,7 @@
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BulletDebugDraw.hpp" />
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Converters.hpp" />
     <ClInclude Include="Game.hpp" />
@@ -184,6 +187,7 @@
     <ClInclude Include="imgui_log.h" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Model.hpp" />
+    <ClInclude Include="Physics.hpp" />
     <ClInclude Include="Picking.hpp" />
     <ClInclude Include="Render.hpp" />
     <ClInclude Include="Renderable.hpp" />
@@ -196,6 +200,8 @@
     <ClInclude Include="Transformable.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bulletDebug.fragment" />
+    <None Include="bulletDebug.vertex" />
     <None Include="grid.fragment" />
     <None Include="grid.vertex" />
     <None Include="triangle.fragment" />
