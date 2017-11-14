@@ -27,6 +27,7 @@ namespace px
 		void InitScene();
 		void UpdateGUI(double dt);
 		void UpdateCamera(float dt);
+		std::string GenerateName(std::string nameType);
 
 	private:
 		static void OnFrameBufferResizeCallback(GLFWwindow* window, int width, int height);
@@ -41,25 +42,38 @@ namespace px
 			glm::vec3 color;
 		};
 
+		//Struct for providing information about an entity to the GUI
+		struct EntityInformation
+		{
+			int selectedEntity;
+			bool picked;
+			std::string pickedName;
+			glm::vec3 rotationAngles;
+			glm::vec3 position;
+			glm::vec3 scale;
+			glm::vec3 color;
+			std::vector<char> nameChanger;
+		};
+
+		//Struct for managing display settings in the GUI
+		struct DisplayInformation
+		{
+			bool showGrid;
+			bool showFPS;
+			bool showCameraPosition;
+			bool hovered;
+			bool showDiagnostics;
+			bool showDebugDraw;
+		};
+
 	private:
 		static std::unique_ptr<Scene> m_scene;
 
 		//GUI related
-		static int m_selectedEntity;
+		static DisplayInformation m_displayInfo;
+		static EntityInformation m_info;
 		static float m_lastX;
-		static float m_lastY;
-		static bool m_picked;
-		static bool m_showGrid;
-		static bool m_showFPS;
-		static bool m_showCameraPosition;
-		static bool m_hovered;
-		static bool m_showDiagnostics;
-		static glm::vec3 m_rotationAngles;
-		static glm::vec3 m_position;
-		static glm::vec3 m_scale;
-		static glm::vec3 m_color;
-		static std::string m_pickedName;
-		static std::vector<char> m_nameChanger;
+		static float m_lastY;;
 		static std::vector<Material> m_materials;
 			
 	private:

@@ -16,21 +16,10 @@ namespace px
 	//Static functions
 	float Game::m_lastX = (float)WINDOW_WIDTH / 2.f;
 	float Game::m_lastY = (float)WINDOW_HEIGHT / 2.f;
-	bool Game::m_hovered = false;
-	bool Game::m_showGrid = true;
-	bool Game::m_showFPS = false;
-	bool Game::m_showCameraPosition = true;
-	bool Game::m_picked = false;
-	bool Game::m_showDiagnostics = false;
-	int Game::m_selectedEntity = 0;
-	std::vector<char> Game::m_nameChanger;
 	std::vector<Game::Material> Game::m_materials; //Test vector for materials
-	glm::vec3 Game::m_rotationAngles;
-	glm::vec3 Game::m_position;
-	glm::vec3 Game::m_scale;
-	glm::vec3 Game::m_color;
-	std::string Game::m_pickedName;
 	std::unique_ptr<Scene> Game::m_scene;
+	Game::EntityInformation Game::m_info;
+	Game::DisplayInformation Game::m_displayInfo;
 
 	Game::Game() : m_frameTime(0.f), m_creationCounter(0)
 	{
@@ -67,6 +56,17 @@ namespace px
 		//Lua functions
 		gameConsole.lua.set_function("setCamera", [](float x, float y, float z) { m_scene->GetCamera()->SetPosition(glm::vec3(x, y, z)); });
 		gameConsole.lua.set_function("print", [] { gameConsole.AddLog("Printed"); });
+
+		//Init some GUI info
+		m_info.picked = false;
+		m_info.selectedEntity = 0;
+
+		m_displayInfo.hovered = false;
+		m_displayInfo.showGrid = true;
+		m_displayInfo.showFPS = false;
+		m_displayInfo.showCameraPosition = true;
+		m_displayInfo.showDiagnostics = false;
+		m_displayInfo.showDebugDraw = true;
 
 		//Materials test
 		Material material;
@@ -172,7 +172,7 @@ namespace px
 		glClearColor(0.274f, 0.227f, 0.227f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (m_showGrid)
+		if (m_displayInfo.showGrid)
 			m_grid->Draw(Shaders::Grid);
 
 		Shader::Use(Shaders::Phong);
@@ -186,7 +186,8 @@ namespace px
 		//Update systems
 		m_scene->UpdateSystems(dt);
 
-		Physics::DrawDebug();
+		if(m_displayInfo.showDebugDraw)
+			Physics::DrawDebug();
 		
 		m_frameBuffer->BlitMultiSampledBuffer();
 		m_frameBuffer->UnbindFrameBuffer();
@@ -197,9 +198,10 @@ namespace px
 	void Game::Update(float dt)
 	{
 		//Consider using a struct object as parameter instead?
-		m_scene->UpdatePickedEntity(m_pickedName, m_position, m_rotationAngles, m_scale, m_color, m_picked);
+		m_scene->UpdatePickedEntity(m_info.pickedName, m_info.position, m_info.rotationAngles, m_info.scale,
+									m_info.color, m_info.picked);
 
-		if (m_hovered)
+		if (m_displayInfo.hovered)
 			UpdateCamera(dt);
 	}
 
@@ -220,7 +222,7 @@ namespace px
 
 		//Draw the image/texture, filling the whole dock window
 		ImGui::Image(reinterpret_cast<ImTextureID>(m_frameBuffer->GetTexture()), size, ImVec2(0, 0), ImVec2(1, -1));
-		m_hovered = ImGui::IsItemHovered();
+		m_displayInfo.hovered = ImGui::IsItemHovered();
 	}
 
 	void Game::UpdateGUI(double dt)
@@ -259,10 +261,11 @@ namespace px
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Show Grid", NULL, &m_showGrid)) {}
-				if (ImGui::MenuItem("Show FPS", NULL, &m_showFPS)) {}
-				if (ImGui::MenuItem("Show Position", NULL, &m_showCameraPosition)) {}
-				if (ImGui::MenuItem("Show Diagnostics", NULL, &m_showDiagnostics)) {}
+				if (ImGui::MenuItem("Show Grid", NULL, &m_displayInfo.showGrid)) {}
+				if (ImGui::MenuItem("Show FPS", NULL, &m_displayInfo.showFPS)) {}
+				if (ImGui::MenuItem("Show Position", NULL, &m_displayInfo.showCameraPosition)) {}
+				if (ImGui::MenuItem("Show Diagnostics", NULL, &m_displayInfo.showDiagnostics)) {}
+				if (ImGui::MenuItem("Show Debug Shapes", NULL, &m_displayInfo.showDebugDraw)) {}
 				ImGui::EndMenu();
 			}
 
@@ -271,76 +274,17 @@ namespace px
 				if (ImGui::BeginMenu("3D Object"))
 				{
 					if(ImGui::MenuItem("Cube"))
-					{
-						std::string name = "Cube" + std::to_string(m_creationCounter);
-						ComponentHandle<Renderable> renderable;
-
-						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
-						{
-							if (name != renderable->object->GetName())
-								name = name;
-							else
-							{
-								m_creationCounter++;
-								name = "Cube" + std::to_string(m_creationCounter);
-							}
-						}
-						m_scene->CreateEntity(m_models, Models::Cube, PickingType::Box, name);
-					}
+						m_scene->CreateEntity(m_models, Models::Cube, PickingType::Box, GenerateName("Cube"));
 
 					if (ImGui::MenuItem("Sphere"))
-					{
-						std::string name = "Sphere" + std::to_string(m_creationCounter);
-						ComponentHandle<Renderable> renderable;
-
-						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
-						{
-							if (name != renderable->object->GetName())
-								name = name;
-							else
-							{
-								m_creationCounter++;
-								name = "Sphere" + std::to_string(m_creationCounter);
-							}
-						}
-						m_scene->CreateEntity(m_models, Models::Sphere, PickingType::Sphere, name);
-					}
+						m_scene->CreateEntity(m_models, Models::Sphere, PickingType::Sphere, GenerateName("Sphere"));
 
 					if (ImGui::MenuItem("Cylinder"))
-					{
-						std::string name = "Cylinder" + std::to_string(m_creationCounter);
-						ComponentHandle<Renderable> renderable;
-
-						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
-						{
-							if (name != renderable->object->GetName())
-								name = name;
-							else
-							{
-								m_creationCounter++;
-								name = "Cylinder" + std::to_string(m_creationCounter);
-							}
-						}
-						m_scene->CreateEntity(m_models, Models::Cylinder, PickingType::Cylinder, name);
-					}
+						m_scene->CreateEntity(m_models, Models::Cylinder, PickingType::Cylinder, GenerateName("Cylinder"));
 
 					/*if (ImGui::MenuItem("Capsule"))
-					{
-						std::string name = "Capsule" + std::to_string(m_creationCounter);
-						ComponentHandle<Renderable> renderable;
-
-						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
-						{
-							if (name != renderable->object->GetName())
-								name = name;
-							else
-							{
-								m_creationCounter++;
-								name = "Capsule" + std::to_string(m_creationCounter);
-							}
-						}
-						m_scene->CreateEntity(m_models, Models::Capsule, PickingType::Capsule, name);
-					}*/
+						m_scene->CreateEntity(m_models, Models::Capsule, PickingType::Capsule,  GenerateName("Capsule"));*/
+					
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
@@ -349,7 +293,7 @@ namespace px
 		}
 
 		//Open popup if delete is pressed && picked
-		if (m_picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)
+		if (m_info.picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)
 		{
 			ImGui::OpenPopup("Delete?");
 		}
@@ -362,21 +306,22 @@ namespace px
 
 			if (ImGui::Button("Yes", ImVec2(120, 0)) || glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
 			{ 
-				m_scene->DestroyEntity(m_pickedName);
+				m_scene->DestroyEntity(m_info.pickedName);
 				m_creationCounter = 0;
-				m_picked = false;
+				m_info.picked = false;
 				ImGui::CloseCurrentPopup(); 
 			}
 			ImGui::SameLine();
+
 			if (ImGui::Button("No", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 			ImGui::EndPopup();
 		}
 
 		//Camera position overlay at the bottom of the scene
-		if (m_showCameraPosition)
+		if (m_displayInfo.showCameraPosition)
 		{
 			ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 215, WINDOW_HEIGHT - 480));
-			if (!ImGui::Begin("Camera overlay", &m_showCameraPosition, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+			if (!ImGui::Begin("Camera overlay", &m_displayInfo.showCameraPosition, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 																						   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				ImGui::End();
@@ -388,10 +333,10 @@ namespace px
 		}
 		
 		//Diagnostics overlay on left of the screen
-		if (m_showDiagnostics)
+		if (m_displayInfo.showDiagnostics)
 		{
 			ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 1370, WINDOW_HEIGHT - 840));
-			if (!ImGui::Begin("Diagnostics overlay", &m_showDiagnostics, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+			if (!ImGui::Begin("Diagnostics overlay", &m_displayInfo.showDiagnostics, ImVec2(0, 0), 0.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 				ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				ImGui::End();
@@ -409,10 +354,10 @@ namespace px
 		}
 
 		//FPS overlay on right of the screen
-		if (m_showFPS)
+		if (m_displayInfo.showFPS)
 		{
 			ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 230, WINDOW_HEIGHT - 840));
-			if (!ImGui::Begin("FPS overlay", &m_showFPS, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+			if (!ImGui::Begin("FPS overlay", &m_displayInfo.showFPS, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 																			 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				ImGui::End();
@@ -464,13 +409,13 @@ namespace px
 			ImGui::SetNextDock(ImGuiDockSlot_Tab);
 			if (ImGui::BeginDock("Inspector"))
 			{		 
-				if (m_picked)
+				if (m_info.picked)
 				{
 					//TODO: make sure that entities can't have the same name!
 					//Change name of entity upon completion
-					if (ImGui::InputText("Name", m_nameChanger.data(), m_nameChanger.size(), ImGuiInputTextFlags_EnterReturnsTrue))
+					if (ImGui::InputText("Name", m_info.nameChanger.data(), m_info.nameChanger.size(), ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						m_scene->ChangeEntityName(m_pickedName, m_nameChanger.data());
+						m_scene->ChangeEntityName(m_info.pickedName, m_info.nameChanger.data());
 					}
 					ImGui::Spacing();
 
@@ -478,11 +423,11 @@ namespace px
 					if (ImGui::CollapsingHeader("Transform"))
 					{
 						ImGui::Spacing();
-						ImGui::InputFloat3("Position", (float*)&m_position, floatPrecision);
+						ImGui::InputFloat3("Position", &m_info.position[0], floatPrecision);
 						ImGui::Spacing();
-						ImGui::InputFloat3("Rotation", (float*)&m_rotationAngles, floatPrecision);
+						ImGui::InputFloat3("Rotation", &m_info.rotationAngles[0], floatPrecision);
 						ImGui::Spacing();
-						ImGui::InputFloat3("Scale", (float*)&m_scale, floatPrecision);
+						ImGui::InputFloat3("Scale", &m_info.scale[0], floatPrecision);
 					}
 					ImGui::Spacing();
 				
@@ -497,7 +442,7 @@ namespace px
 
 						//For now...
 						//Assign color from picked material
-						m_color = m_materials[item2].color;
+						m_info.color = m_materials[item2].color;
 					}
 				}
 			}
@@ -516,23 +461,23 @@ namespace px
 				{
 					char label[128];
 					sprintf(label, renderable->object->GetName().c_str());
-					if (ImGui::Selectable(label, m_selectedEntity == i))
+					if (ImGui::Selectable(label, m_info.selectedEntity == i))
 					{
 						//Give information to GUI about picked object
-						m_pickedName = renderable->object->GetName();
-						m_color = renderable->object->GetColor();
+						m_info.pickedName = renderable->object->GetName();
+						m_info.color = renderable->object->GetColor();
 
 						//Copy the name to the char vector
-						m_nameChanger.clear(); m_nameChanger.resize(50);
-						for (unsigned int p = 0; p < m_pickedName.size(); p++)
-							m_nameChanger[p] = m_pickedName[p];
+						m_info.nameChanger.clear(); m_info.nameChanger.resize(50);
+						for (unsigned int p = 0; p < m_info.pickedName.size(); p++)
+							m_info.nameChanger[p] = m_info.pickedName[p];
 
 						//Give information to GUI about picked object
-						m_scale = transform->transform->GetScale();
-						m_position = transform->transform->GetPosition();
-						m_rotationAngles = transform->transform->GetRotationAngles();
-						m_selectedEntity = i;
-						m_picked = true;
+						m_info.scale = transform->transform->GetScale();
+						m_info.position = transform->transform->GetPosition();
+						m_info.rotationAngles = transform->transform->GetRotationAngles();
+						m_info.selectedEntity = i;
+						m_info.picked = true;
 					}
 					i++;
 				}
@@ -590,6 +535,27 @@ namespace px
 			m_scene->GetCamera()->ProcessKeyboard(LEFT, dt);
 	}
 
+	std::string Game::GenerateName(std::string nameType)
+	{
+		//Generates a new name based on a type (sphere, cube, etc)
+		//This function is not safe as the name can sometimes already be taken
+		std::string name = nameType + std::to_string(m_creationCounter);
+		ComponentHandle<Renderable> renderable;
+
+		for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
+		{
+			if (name != renderable->object->GetName())
+				name = name;
+			else
+			{
+				m_creationCounter++;
+				name = nameType + std::to_string(m_creationCounter);
+			}
+		}
+
+		return name;
+	}
+
 	//*** Callbacks ***
 	void Game::OnFrameBufferResizeCallback(GLFWwindow * window, int width, int height)
 	{
@@ -598,7 +564,7 @@ namespace px
 
 	void Game::OnMouseCallback(GLFWwindow * window, double xpos, double ypos)
 	{
-		if (m_hovered)
+		if (m_displayInfo.hovered)
 		{
 			if (m_scene->GetCamera()->GetFirstMouse())
 			{
@@ -624,7 +590,7 @@ namespace px
 			//Height formula (approximation) -> (new_height / 8)
 
 			//Picking: project 2D-position to 3D and check intersection with OBB
-			if (m_hovered)
+			if (m_displayInfo.hovered)
 			{
 				Picking::PerformMousePicking(m_scene->GetCamera(), m_lastX - 16, m_lastY - 50);
 
@@ -638,24 +604,24 @@ namespace px
 					if (Picking::RayCast(FAR_PLANE, pickable->object->GetRigidBody()))
 					{
 						//Give information to GUI about picked object
-						m_selectedEntity = i;
-						m_pickedName = renderable->object->GetName();
-						m_color = renderable->object->GetColor();
-						m_scale = transform->transform->GetScale();
-						m_position = transform->transform->GetPosition();
-						m_rotationAngles = transform->transform->GetRotationAngles();
-						m_picked = true;
+						m_info.selectedEntity = i;
+						m_info.pickedName = renderable->object->GetName();
+						m_info.color = renderable->object->GetColor();
+						m_info.scale = transform->transform->GetScale();
+						m_info.position = transform->transform->GetPosition();
+						m_info.rotationAngles = transform->transform->GetRotationAngles();
+						m_info.picked = true;
 
 						//Copy the name to the char vector
-						m_nameChanger.clear(); m_nameChanger.resize(50);
-						for (unsigned int p = 0; p < m_pickedName.size(); p++)
-							m_nameChanger[p] = m_pickedName[p];
+						m_info.nameChanger.clear(); m_info.nameChanger.resize(50);
+						for (unsigned int p = 0; p < m_info.pickedName.size(); p++)
+							m_info.nameChanger[p] = m_info.pickedName[p];
 
 						gameLog.Print("Picked\n");
 						break;
 					}
 					else
-						m_picked = false;
+						m_info.picked = false;
 
 					i++;
 				}
