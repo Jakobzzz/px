@@ -277,7 +277,7 @@ namespace px
 							}
 						}
 
-						m_scene->CreateEntity(m_models, Models::Cube, name);
+						m_scene->CreateEntity(m_models, Models::Cube, PickingType::Box, name);
 					}
 
 					ImGui::EndMenu();

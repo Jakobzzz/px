@@ -44,12 +44,12 @@ namespace px
 			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
 
 			//Picking component
-			auto pickable = std::make_unique<px::PickingBody>(PickingType::Box, utils::FromVec3Json(reader[name]["position"]),
+			auto pickable = std::make_unique<px::PickingBody>(reader[name]["pickingType"], utils::FromVec3Json(reader[name]["position"]),
 				utils::FromVec3Json(reader[name]["scale"]), transform->GetOrientation());
 			entity.assign<Pickable>(pickable);
 
 			//Render component
-			auto render = std::make_unique<px::Render>(models, Models::Cube, Shaders::Phong, name); //Only cube models right now;
+			auto render = std::make_unique<px::Render>(models, reader[name]["model"], Shaders::Phong, name); //Only cube models right now;
 			entity.assign<Renderable>(render);
 			entity.assign<Transformable>(transform);
 		}
@@ -61,10 +61,10 @@ namespace px
 
 	void Scene::ChangeEntityName(std::string name, std::string newName)
 	{
-		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
 
-		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+		//TODO: make sure that the chosen name doesn't already exist!
+		for (Entity & entity : m_entities.entities_with_components(renderable))
 		{
 			if (name == renderable->object->GetName())
 			{
@@ -74,25 +74,30 @@ namespace px
 		}
 	}
 
-	void Scene::CreateEntity(ModelHolder models, Models::ID modelID, std::string name)
+	void Scene::CreateEntity(ModelHolder models, Models::ID modelID, PickingType::ID pickShape, std::string name)
 	{
-		//Create default entity with transform and render component
+		//Create entity at the origin
 		auto entity = m_entities.create();
 		auto transform = std::make_unique<Transform>();
 		auto render = std::make_unique<px::Render>(models, modelID, Shaders::Phong, name); //One shader right now
+		auto pickable = std::make_unique<px::PickingBody>(pickShape);
+
 		entity.assign<Transformable>(transform);
 		entity.assign<Renderable>(render);
+		entity.assign<Pickable>(pickable);
 	}
 
 	void Scene::DestroyEntity(std::string name)
 	{
 		ComponentHandle<Renderable> renderable;
+		ComponentHandle<Pickable> pickable;
 
 		//Remove entity which corresponds to the name
-		for (Entity & entity : m_entities.entities_with_components(renderable))
+		for (Entity & entity : m_entities.entities_with_components(renderable, pickable))
 		{
 			if (name == renderable->object->GetName())
 			{
+				pickable->object->DestroyBody();
 				m_entities.destroy(entity.id());
 				break;
 			}
@@ -142,10 +147,13 @@ namespace px
 		int i = 0;
 		ComponentHandle<Transformable> transform;
 		ComponentHandle<Renderable> renderable;
+		ComponentHandle<Pickable> pickable;
 
-		for (Entity & entity : m_entities.entities_with_components(transform, renderable))
+		for (Entity & entity : m_entities.entities_with_components(transform, renderable, pickable))
 		{
 			data["Scene"]["names"][i] = renderable->object->GetName();
+			data[renderable->object->GetName()]["pickingType"] = pickable->object->GetPickingType();
+			data[renderable->object->GetName()]["model"] = renderable->object->GetModel();
 			data[renderable->object->GetName()]["position"] = utils::ToVec3Json(transform->transform->GetPosition());
 			data[renderable->object->GetName()]["rotation"] = utils::ToVec3Json(transform->transform->GetRotationAngles());
 			data[renderable->object->GetName()]["scale"] = utils::ToVec3Json(transform->transform->GetScale());
