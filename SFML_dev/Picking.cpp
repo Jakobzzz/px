@@ -34,153 +34,28 @@ namespace px
 		m_direction = glm::normalize(m_direction);
 	}
 
-	bool Picking::RaySphereIntersection(glm::mat4 modelMatrix, float radius)
+	bool Picking::RayCast(float distance, btRigidBody * body)
 	{
-		//Now transform the ray origin from view to world space
-		m_origin = glm::inverse(modelMatrix) * glm::vec4(m_origin, 1.f);
-
-		//Now perform the the intersection test
-		float a, b, c, discriminant;
-
-		// Calculate the a, b, and c coefficients.
-		a = (m_direction.x * m_direction.x) + (m_direction.y * m_direction.y) + (m_direction.z * m_direction.z);
-		b = ((m_direction.x * m_origin.x) + (m_direction.y * m_origin.y) + (m_direction.z * m_origin.z)) * 2.0f;
-		c = ((m_origin.x * m_origin.x) + (m_origin.y * m_origin.y) + (m_origin.z * m_origin.z)) - (radius * radius);
-
-		//Find the discriminant.
-		discriminant = (b * b) - (4 * a * c);
-
-		//if discriminant is negative the picking ray missed the sphere, otherwise it intersected the sphere.
-		if (discriminant < 0.0f)
-		{
+		//Raycast with bullet for intersection testing
+		if (Physics::m_dynamicsWorld == nullptr)
 			return false;
-		}
 
-		return true;
+		glm::vec3 rayEnd = m_origin + m_direction * distance;
+		btCollisionWorld::ClosestRayResultCallback RayCallback(Physics::ToBulletVector(m_origin), Physics::ToBulletVector(rayEnd));
+		Physics::m_dynamicsWorld->rayTest(Physics::ToBulletVector(m_origin), Physics::ToBulletVector(rayEnd), RayCallback);
+
+		if (RayCallback.hasHit())
+		{
+			btRigidBody* pickedBody = (btRigidBody*)btRigidBody::upcast(RayCallback.m_collisionObject);
+			if(pickedBody == body && body->getActivationState() == DISABLE_SIMULATION)
+				return true;
+		}
+		else
+			return false;
+
+		return false;
 	}
 
-	//Half-lengths are the positive distance from the center to a box face
-	bool Picking::RayOBBIntersection(glm::vec3 halfLengths, glm::mat4 modelMatrix)
-	{
-		//Intersection based on the SLABS-method described in the book Real-Time Rendering
-		float tMin = -INFINITY;
-		float tMax = INFINITY;
-
-		glm::vec3 worldPos = glm::vec3(modelMatrix[3].x, modelMatrix[3].y, modelMatrix[3].z);
-		glm::vec3 delta = worldPos - m_origin;
-
-		//Test intersection with the 2 planes perpendicular to the OBB's X axis
-		{
-			glm::vec3 axis_x(modelMatrix[0].x, modelMatrix[0].y, modelMatrix[0].z);
-			float e = glm::dot(axis_x, delta);
-			float f = glm::dot(m_direction, axis_x);
-
-			if (fabs(f) > EPSILON)
-			{
-				//Intersection with "left" and "right" plane
-				float t1 = (e + halfLengths.x) / f;
-				float t2 = (e - halfLengths.x) / f;
-
-				//t1 and t2 now contain distances betwen ray origin and ray-plane intersections
-				//We want t1 to represent the nearest intersection, thus if it's not the case then we will swap
-				if (t1 > t2)
-				{
-					float w = t1;
-					t1 = t2;
-					t2 = w;
-				}
-
-				//tMax is the nearest "far" intersection (amongst the X,Y and Z planes pairs)
-				if (t2 < tMax)
-					tMax = t2;
-
-				//tMin is the farthest "near" intersection (amongst the X,Y and Z planes pairs)
-				if (t1 > tMin)
-					tMin = t1;
-
-				//If "far" is closer than "near", then there is NO intersection.
-				if (tMax < tMin)
-					return false;
-			}
-			else
-			{
-				if (-e - halfLengths.x > 0.0f || -e + halfLengths.x < 0.0f)
-					return false;
-			}
-		}
-
-		//Test intersection with the 2 planes perpendicular to the OBB's Y axis
-		{
-			glm::vec3 axis_y(modelMatrix[1].x, modelMatrix[1].y, modelMatrix[1].z);
-			float e = glm::dot(axis_y, delta);
-			float f = glm::dot(m_direction, axis_y);
-
-			if (fabs(f) > EPSILON) 
-			{
-				float t1 = (e + halfLengths.y) / f;
-				float t2 = (e - halfLengths.y) / f;
-
-				if (t1 > t2) 
-				{ 
-					float w = t1; 
-					t1 = t2; 
-					t2 = w; 
-				}
-
-				if (t2 < tMax)
-					tMax = t2;
-
-				if (t1 > tMin)
-					tMin = t1;
-
-				if (tMin > tMax)
-					return false;
-			}
-			else 
-			{
-				if (-e - halfLengths.y > 0.0f || -e + halfLengths.y < 0.0f)
-					return false;
-			}
-		}
-
-		//Test intersection with the 2 planes perpendicular to the OBB's Z axis
-		{
-			glm::vec3 axis_z(modelMatrix[2].x, modelMatrix[2].y, modelMatrix[2].z);
-			float e = glm::dot(axis_z, delta);
-			float f = glm::dot(m_direction, axis_z);
-
-			if (fabs(f) > EPSILON) 
-			{
-
-				float t1 = (e + halfLengths.z) / f;
-				float t2 = (e - halfLengths.z) / f;
-
-				if (t1 > t2) 
-				{ 
-					float w = t1; 
-					t1 = t2; 
-					t2 = w; 
-				}
-
-				if (t2 < tMax)
-					tMax = t2;
-
-				if (t1 > tMin)
-					tMin = t1;
-
-				if (tMin > tMax)
-					return false;
-			}
-			else 
-			{
-				if (-e - halfLengths.z > 0.0f || -e + halfLengths.z < 0.0f)
-					return false;
-			}
-		}
-
-		//Pass tested and we have an intersection
-		return true;
-	}
 
 	glm::vec3 Picking::GetPickingRay()
 	{

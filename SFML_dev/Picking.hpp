@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Physics.hpp"
 
 namespace px
 {
@@ -13,8 +14,7 @@ namespace px
 	{
 	public:
 		static void PerformMousePicking(std::shared_ptr<Camera> & camera, float x, float y);
-		static bool RaySphereIntersection(glm::mat4 modelMatrix, float radius);
-		static bool RayOBBIntersection(glm::vec3 halfLengths, glm::mat4 modelMatrix);
+		static bool RayCast(float distance, btRigidBody* body);
 
 	public:
 		static glm::vec3 GetPickingRay();

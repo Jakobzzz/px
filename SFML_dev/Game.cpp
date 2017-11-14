@@ -143,7 +143,7 @@ namespace px
 
 			glfwPollEvents();
 
-			//Physics::Update();
+			Physics::Update();
 			UpdateGUI(deltaTime);
 			Update((float)deltaTime);
 
@@ -569,11 +569,12 @@ namespace px
 
 				ComponentHandle<Transformable> transform;
 				ComponentHandle<Renderable> renderable;
+				ComponentHandle<Pickable> pickable;
 
 				unsigned int i = 0;
-				for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
+				for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable, pickable))
 				{
-					if (Picking::RayOBBIntersection(glm::vec3(1.f), transform->transform->GetTransform()))
+					if (Picking::RayCast(FAR_PLANE, pickable->object->GetRigidBody()))
 					{
 						//Give information to GUI about picked object
 						m_selectedEntity = i;
