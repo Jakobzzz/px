@@ -12,7 +12,7 @@ namespace px
 		Shader::SetFloat3v(id, "color", m_color);
 
 		glBindVertexArray(m_VAO);
-		glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, m_nrOfIndices, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 
@@ -35,6 +35,9 @@ namespace px
 
 	void Mesh::SetupMesh()
 	{
+		m_nrOfVertices = m_vertices.size();
+		m_nrOfIndices = m_indices.size();
+
 		glGenVertexArrays(1, &m_VAO);
 		glGenBuffers(1, &m_VBO);
 		glGenBuffers(1, &m_EBO);
@@ -56,5 +59,9 @@ namespace px
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 
 		glBindVertexArray(0);
+
+		//Clear vectors from memory
+		std::vector<Vertex>().swap(m_vertices);
+		std::vector<unsigned int>().swap(m_indices);
 	}
 }

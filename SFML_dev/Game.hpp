@@ -63,7 +63,7 @@ namespace px
 		static std::vector<Material> m_materials;
 			
 	private:
-		int m_cubeCreationCounter;
+		int m_creationCounter;
 		bool* m_open;
 		float m_frameTime;
 		GLFWwindow* m_window;

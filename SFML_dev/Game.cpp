@@ -32,7 +32,7 @@ namespace px
 	std::string Game::m_pickedName;
 	std::unique_ptr<Scene> Game::m_scene;
 
-	Game::Game() : m_frameTime(0.f), m_cubeCreationCounter(0)
+	Game::Game() : m_frameTime(0.f), m_creationCounter(0)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -87,7 +87,13 @@ namespace px
 	{
 		m_scene->WriteSceneData();
 		m_scene->DestroyScene();
+
+		//TODO: make function to destroy all loaded models?
 		m_models->Destroy(Models::Cube);
+		//m_models->Destroy(Models::Capsule);
+		m_models->Destroy(Models::Sphere);
+		m_models->Destroy(Models::Cylinder);
+
 		Physics::Release();
 		ImGui_ImplGlfwGL3_Shutdown();
 		glfwTerminate();
@@ -103,7 +109,12 @@ namespace px
 	void Game::LoadModels()
 	{
 		m_models = std::make_shared<Model<Models::ID>>();
-		m_models->LoadModel(Models::Cube, "../res/Models/Cube/cube.obj"); //Check the mesh vector when more objects are added -> clear() or local vector?
+
+		//Standard models
+		m_models->LoadModel(Models::Cube, "../res/Models/Cube/cube.obj");
+		m_models->LoadModel(Models::Sphere, "../res/Models/Sphere/sphere.obj");
+		m_models->LoadModel(Models::Cylinder, "../res/Models/Cylinder/cylinder.obj");
+		//m_models->LoadModel(Models::Capsule, "../res/Models/Capsule/capsule.obj");
 	}
 
 	void Game::InitScene()
@@ -261,25 +272,75 @@ namespace px
 				{
 					if(ImGui::MenuItem("Cube"))
 					{
-						std::string name = "Cube" + std::to_string(m_cubeCreationCounter);
-
-						ComponentHandle<Transformable> transform;
+						std::string name = "Cube" + std::to_string(m_creationCounter);
 						ComponentHandle<Renderable> renderable;
 
-						for (Entity & entity : m_scene->GetEntities().entities_with_components(transform, renderable))
+						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
 						{
 							if (name != renderable->object->GetName())
 								name = name;
 							else
 							{
-								m_cubeCreationCounter++;
-								name = "Cube" + std::to_string(m_cubeCreationCounter);
+								m_creationCounter++;
+								name = "Cube" + std::to_string(m_creationCounter);
 							}
 						}
-
 						m_scene->CreateEntity(m_models, Models::Cube, PickingType::Box, name);
 					}
 
+					if (ImGui::MenuItem("Sphere"))
+					{
+						std::string name = "Sphere" + std::to_string(m_creationCounter);
+						ComponentHandle<Renderable> renderable;
+
+						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
+						{
+							if (name != renderable->object->GetName())
+								name = name;
+							else
+							{
+								m_creationCounter++;
+								name = "Sphere" + std::to_string(m_creationCounter);
+							}
+						}
+						m_scene->CreateEntity(m_models, Models::Sphere, PickingType::Sphere, name);
+					}
+
+					if (ImGui::MenuItem("Cylinder"))
+					{
+						std::string name = "Cylinder" + std::to_string(m_creationCounter);
+						ComponentHandle<Renderable> renderable;
+
+						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
+						{
+							if (name != renderable->object->GetName())
+								name = name;
+							else
+							{
+								m_creationCounter++;
+								name = "Cylinder" + std::to_string(m_creationCounter);
+							}
+						}
+						m_scene->CreateEntity(m_models, Models::Cylinder, PickingType::Cylinder, name);
+					}
+
+					/*if (ImGui::MenuItem("Capsule"))
+					{
+						std::string name = "Capsule" + std::to_string(m_creationCounter);
+						ComponentHandle<Renderable> renderable;
+
+						for (Entity & entity : m_scene->GetEntities().entities_with_components(renderable))
+						{
+							if (name != renderable->object->GetName())
+								name = name;
+							else
+							{
+								m_creationCounter++;
+								name = "Capsule" + std::to_string(m_creationCounter);
+							}
+						}
+						m_scene->CreateEntity(m_models, Models::Capsule, PickingType::Capsule, name);
+					}*/
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
@@ -299,10 +360,10 @@ namespace px
 			ImGui::Text("Are you sure you want to delete this item?\nThis action can't be undone.\n\n");
 			ImGui::Separator();
 
-			if (ImGui::Button("Yes", ImVec2(120, 0))) 
+			if (ImGui::Button("Yes", ImVec2(120, 0)) || glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS)
 			{ 
 				m_scene->DestroyEntity(m_pickedName);
-				m_cubeCreationCounter = 0;
+				m_creationCounter = 0;
 				m_picked = false;
 				ImGui::CloseCurrentPopup(); 
 			}

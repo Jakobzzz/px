@@ -34,6 +34,7 @@ namespace px
 		std::vector<Vertex> m_vertices;
 		std::vector<unsigned int> m_indices;
 		unsigned int m_VAO, m_VBO, m_EBO;
+		unsigned int m_nrOfVertices, m_nrOfIndices;
 		glm::vec3 m_color;
 	};
 }

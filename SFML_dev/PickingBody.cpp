@@ -14,7 +14,7 @@ namespace px
 			m_shape = new btSphereShape(Physics::ToBulletScalar(scale.x)); //Radius
 			CreateBody(position, orientation);
 			break;
-		case px::PickingType::Capsule:
+		case px::PickingType::Capsule: //A bit weird at the moment, don't know the exakt dimensions conversion
 			m_shape = new btCapsuleShape(Physics::ToBulletScalar(scale.x), Physics::ToBulletScalar(scale.y)); //Radius and height
 			CreateBody(position, orientation);
 			break;

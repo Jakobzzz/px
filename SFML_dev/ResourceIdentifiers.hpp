@@ -6,7 +6,10 @@ namespace px
 	{
 		enum ID
 		{
-			Cube
+			Cube,
+			Sphere,
+			Cylinder,
+			Capsule
 		};
 	}
 
