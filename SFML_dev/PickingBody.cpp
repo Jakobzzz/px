@@ -2,35 +2,37 @@
 
 namespace px
 {
-	PickingBody::PickingBody(PickingType::ID id, glm::vec3 position, glm::vec3 scale, glm::quat orientation) : m_pickingType(id)
+	PickingBody::PickingBody(PickingType::ID id) : m_pickingType(id)
 	{
 		switch (id)
 		{
 		case px::PickingType::Box:
-			m_shape = new btBoxShape(Physics::ToBulletVector(scale));
-			CreateBody(position, orientation);
+			m_shape = new btBoxShape(Physics::ToBulletVector(glm::vec3(1.f)));
+			CreateBody();
 			break;
 		case px::PickingType::Sphere:
-			m_shape = new btSphereShape(Physics::ToBulletScalar(scale.x)); //Radius
-			CreateBody(position, orientation);
+			m_shape = new btSphereShape(1); //Radius
+			CreateBody();
 			break;
-		case px::PickingType::Capsule: //A bit weird at the moment, don't know the exakt dimensions conversion
-			m_shape = new btCapsuleShape(Physics::ToBulletScalar(scale.x), Physics::ToBulletScalar(scale.y)); //Radius and height
-			CreateBody(position, orientation);
+		case px::PickingType::Capsule: //A bit weird at the moment, don't know the exact dimensions conversion
+			m_shape = new btCapsuleShape(1, 1); //Radius and height
+			CreateBody();
 			break;
 		case px::PickingType::Cylinder:
-			m_shape = new btCylinderShape(Physics::ToBulletVector(scale));
-			CreateBody(position, orientation);
+			m_shape = new btCylinderShape(Physics::ToBulletVector(glm::vec3(1.f)));
+			CreateBody();
 			break;
 		default:
 			break;
 		}
 	}
 
-	void PickingBody::CreateBody(glm::vec3 position, glm::quat orientation)
+	//Note: this function always creates a rigidbody at the origin because of
+	//the local scaling problem associated with the collision body
+	//Thus, you will call setTransform() afterwards
+	void PickingBody::CreateBody()
 	{
-		//Create rigidbody from position and rotation
-		m_motionState = new btDefaultMotionState(btTransform(Physics::ToBulletQuaternion(orientation), Physics::ToBulletVector(position)));
+		m_motionState = new btDefaultMotionState(btTransform(Physics::ToBulletQuaternion(glm::quat()), Physics::ToBulletVector(glm::vec3())));
 		btRigidBody::btRigidBodyConstructionInfo CI(0, m_motionState, m_shape);
 		m_rigidBody = new btRigidBody(CI);
 		m_rigidBody->setActivationState(DISABLE_SIMULATION); //We don't want the pickshape to be active
@@ -42,6 +44,7 @@ namespace px
 		Physics::m_dynamicsWorld->removeRigidBody(m_rigidBody);
 		delete m_rigidBody->getMotionState();
 		delete m_rigidBody;
+		delete m_shape;
 	}
 
 	void PickingBody::SetTransform(glm::vec3 position, glm::vec3 scale, glm::quat orientation)
@@ -50,7 +53,6 @@ namespace px
 		trans.setOrigin(Physics::ToBulletVector(position));
 		trans.setRotation(Physics::ToBulletQuaternion(orientation));
 		m_rigidBody->getCollisionShape()->setLocalScaling(Physics::ToBulletVector(scale));
-
 		m_rigidBody->setWorldTransform(trans);
 	}
 

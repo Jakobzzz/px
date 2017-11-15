@@ -17,7 +17,7 @@ namespace px
 	class PickingBody
 	{
 	public:
-		PickingBody(PickingType::ID id, glm::vec3 position = glm::vec3(), glm::vec3 scale = glm::vec3(1.f), glm::quat orientation = glm::quat());
+		PickingBody(PickingType::ID id);
 		
 	public:
 		void DestroyBody();
@@ -30,7 +30,7 @@ namespace px
 		PickingType::ID GetPickingType() const;
 
 	private:
-		void CreateBody(glm::vec3 position, glm::quat orientation);
+		void CreateBody();
 
 	private:
 		btCollisionShape* m_shape;

@@ -44,14 +44,17 @@ namespace px
 			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
 
 			//Picking component
-			auto pickable = std::make_unique<px::PickingBody>(reader[name]["pickingType"], utils::FromVec3Json(reader[name]["position"]),
-				utils::FromVec3Json(reader[name]["scale"]), transform->GetOrientation());
-			entity.assign<Pickable>(pickable);
+			PickingType::ID id = reader[name]["pickingType"];
+			auto pickable = std::make_unique<px::PickingBody>(id);
+			pickable->SetTransform(utils::FromVec3Json(reader[name]["position"]), utils::FromVec3Json(reader[name]["scale"]),
+			transform->GetOrientation());
 
 			//Render component
 			auto render = std::make_unique<px::Render>(models, reader[name]["model"], Shaders::Phong, name); //Only cube models right now;
-			entity.assign<Renderable>(render);
+
 			entity.assign<Transformable>(transform);
+			entity.assign<Renderable>(render);
+			entity.assign<Pickable>(pickable);
 		}
 
 		//Systems

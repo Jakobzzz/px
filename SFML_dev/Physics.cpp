@@ -29,6 +29,7 @@ namespace px
 		//Debug draw
 		m_debugDraw = new BulletDebugDraw(camera);
 		m_debugDraw->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+
 		m_dynamicsWorld->setDebugDrawer(m_debugDraw);
 	}
 
