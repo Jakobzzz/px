@@ -3,6 +3,7 @@
 #include "imgui_impl_glfw_gl3.h"
 #include "imgui_log.h"
 #include "imgui_console.h"
+#include "Macros.hpp"
 
 #include <assert.h>
 #include <iostream>
@@ -185,7 +186,7 @@ namespace px
 
 		//Update systems
 		m_scene->UpdateSystems(dt);
-
+	
 		if(m_displayInfo.showDebugDraw)
 			Physics::DrawDebug();
 		
@@ -274,13 +275,13 @@ namespace px
 				if (ImGui::BeginMenu("3D Object"))
 				{
 					if(ImGui::MenuItem("Cube"))
-						m_scene->CreateEntity(m_models, Models::Cube, PickingType::Box, GenerateName("Cube"));
+						m_scene->CreateEntity(m_models, Models::Cube, RigidBodyType::Box, GenerateName("Cube"));
 
 					if (ImGui::MenuItem("Sphere"))
-						m_scene->CreateEntity(m_models, Models::Sphere, PickingType::Sphere, GenerateName("Sphere"));
+						m_scene->CreateEntity(m_models, Models::Sphere, RigidBodyType::Sphere, GenerateName("Sphere"));
 
 					if (ImGui::MenuItem("Cylinder"))
-						m_scene->CreateEntity(m_models, Models::Cylinder, PickingType::Cylinder, GenerateName("Cylinder"));
+						m_scene->CreateEntity(m_models, Models::Cylinder, RigidBodyType::Cylinder, GenerateName("Cylinder"));
 
 					/*if (ImGui::MenuItem("Capsule"))
 						m_scene->CreateEntity(m_models, Models::Capsule, PickingType::Capsule,  GenerateName("Capsule"));*/
@@ -291,6 +292,28 @@ namespace px
 			}
 			ImGui::EndMainMenuBar();
 		}
+
+		//static bool delayFrame;
+		//delayFrame = true;
+		//if (m_info.picked && (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(m_window, GLFW_KEY_B) == GLFW_PRESS))
+		//{
+		//	//Only default components for now
+		//	if (delayFrame)
+		//	{
+		//		//auto entity = m_scene->GetEntityByName(m_info.pickedName);
+
+		//		/*Models::ID id = m_scene->GetEntityByName(m_info.pickedName).component<Renderable>()->object->GetModel();
+		//		PickingType::ID type = m_scene->GetEntityByName(m_info.pickedName).component<Pickable>()->object->GetPickingType();
+		//		glm::vec3 pos = m_scene->GetEntityByName(m_info.pickedName).component<Transformable>()->transform->GetPosition();
+		//		glm::vec3 scale = m_scene->GetEntityByName(m_info.pickedName).component<Transformable>()->transform->GetScale();
+		//		glm::vec3 rotation = m_scene->GetEntityByName(m_info.pickedName).component<Transformable>()->transform->GetRotationAngles();
+
+		//		m_scene->CreateEntity(m_models, id, type, GenerateName(m_info.pickedName + "(clone)"));*/
+
+
+		//		delayFrame = false;
+		//	}
+		//}
 
 		//Open popup if delete is pressed && picked
 		if (m_info.picked && glfwGetKey(m_window, GLFW_KEY_DELETE) == GLFW_PRESS)

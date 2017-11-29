@@ -36,6 +36,9 @@ namespace px
 	void Physics::Update()
 	{
 		m_dynamicsWorld->stepSimulation(1.f / 60.f, 7);
+
+		//If the user presses the play button all rigidbodies (not picking related)
+		//will simply be activated enabled in the simulation?
 	}
 
 	void Physics::Release()

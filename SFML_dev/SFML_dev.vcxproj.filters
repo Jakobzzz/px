@@ -176,6 +176,9 @@
     <ClInclude Include="Pickable.hpp">
       <Filter>Graphics\Components</Filter>
     </ClInclude>
+    <ClInclude Include="Macros.hpp">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="triangle.fragment">

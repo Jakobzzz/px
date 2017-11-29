@@ -1,24 +1,25 @@
 #include "PickingBody.hpp"
+#include <iostream>
 
 namespace px
 {
-	PickingBody::PickingBody(PickingType::ID id) : m_pickingType(id)
+	PickingBody::PickingBody(RigidBodyType::ID id) : m_pickingType(id)
 	{
 		switch (id)
 		{
-		case px::PickingType::Box:
+		case px::RigidBodyType::Box:
 			m_shape = new btBoxShape(Physics::ToBulletVector(glm::vec3(1.f)));
 			CreateBody();
 			break;
-		case px::PickingType::Sphere:
+		case px::RigidBodyType::Sphere:
 			m_shape = new btSphereShape(1); //Radius
 			CreateBody();
 			break;
-		case px::PickingType::Capsule: //A bit weird at the moment, don't know the exact dimensions conversion
+		case px::RigidBodyType::Capsule: //A bit weird at the moment, don't know the exact dimensions conversion
 			m_shape = new btCapsuleShape(1, 1); //Radius and height
 			CreateBody();
 			break;
-		case px::PickingType::Cylinder:
+		case px::RigidBodyType::Cylinder:
 			m_shape = new btCylinderShape(Physics::ToBulletVector(glm::vec3(1.f)));
 			CreateBody();
 			break;
@@ -56,7 +57,7 @@ namespace px
 		m_rigidBody->setWorldTransform(trans);
 	}
 
-	PickingType::ID PickingBody::GetPickingType() const
+	RigidBodyType::ID PickingBody::GetPickingType() const
 	{
 		return m_pickingType;
 	}

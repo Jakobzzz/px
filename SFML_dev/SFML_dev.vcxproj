@@ -186,6 +186,7 @@
     <ClInclude Include="imgui_console.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
     <ClInclude Include="imgui_log.h" />
+    <ClInclude Include="Macros.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Physics.hpp" />

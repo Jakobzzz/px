@@ -44,13 +44,13 @@ namespace px
 			transform->SetScale(utils::FromVec3Json(reader[name]["scale"]));
 
 			//Picking component
-			PickingType::ID id = reader[name]["pickingType"];
+			RigidBodyType::ID id = reader[name]["pickingType"];
 			auto pickable = std::make_unique<px::PickingBody>(id);
 			pickable->SetTransform(utils::FromVec3Json(reader[name]["position"]), utils::FromVec3Json(reader[name]["scale"]),
 			transform->GetOrientation());
 
 			//Render component
-			auto render = std::make_unique<px::Render>(models, reader[name]["model"], Shaders::Phong, name); //Only cube models right now;
+			auto render = std::make_unique<px::Render>(models, reader[name]["model"], Shaders::Phong, name);
 
 			entity.assign<Transformable>(transform);
 			entity.assign<Renderable>(render);
@@ -77,7 +77,7 @@ namespace px
 		}
 	}
 
-	void Scene::CreateEntity(ModelHolder models, Models::ID modelID, PickingType::ID pickShape, std::string name)
+	void Scene::CreateEntity(ModelHolder models, Models::ID modelID, RigidBodyType::ID pickShape, std::string name)
 	{
 		//Create entity at the origin
 		auto entity = m_entities.create();
@@ -192,5 +192,18 @@ namespace px
 	EntityManager & Scene::GetEntities()
 	{
 		return m_entities;
+	}
+
+	Entity Scene::GetEntityByName(std::string name)
+	{
+		ComponentHandle<Renderable> renderable;
+
+		for (Entity & entity : m_entities.entities_with_components(renderable))
+		{
+			if (name == renderable->object->GetName())
+				return entity;
+		}
+
+		return Entity();
 	}
 }

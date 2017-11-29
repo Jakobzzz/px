@@ -4,6 +4,17 @@
 
 namespace px
 {
+	namespace RigidBodyType
+	{
+		enum ID
+		{
+			Box,
+			Sphere,
+			Capsule,
+			Cylinder
+		};
+	}
+
 	class Physics
 	{
 	public:

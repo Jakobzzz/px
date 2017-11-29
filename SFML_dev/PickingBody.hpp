@@ -3,21 +3,10 @@
 
 namespace px
 {
-	namespace PickingType
-	{
-		enum ID
-		{
-			Box,
-			Sphere,
-			Capsule,
-			Cylinder
-		};
-	}
-
 	class PickingBody
 	{
 	public:
-		PickingBody(PickingType::ID id);
+		PickingBody(RigidBodyType::ID id);
 		
 	public:
 		void DestroyBody();
@@ -27,7 +16,7 @@ namespace px
 
 	public:
 		btRigidBody* GetRigidBody() const;
-		PickingType::ID GetPickingType() const;
+		RigidBodyType::ID GetPickingType() const;
 
 	private:
 		void CreateBody();
@@ -36,7 +25,7 @@ namespace px
 		btCollisionShape* m_shape;
 		btDefaultMotionState* m_motionState;
 		btRigidBody* m_rigidBody;
-		PickingType::ID m_pickingType;
+		RigidBodyType::ID m_pickingType;
 	};
 }
 

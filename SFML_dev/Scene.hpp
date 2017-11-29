@@ -26,7 +26,7 @@ namespace px
 	public:
 		void LoadScene(ModelHolder models);
 		void ChangeEntityName(std::string name, std::string newName);
-		void CreateEntity(ModelHolder models, Models::ID modelID, PickingType::ID pickShape, std::string name);
+		void CreateEntity(ModelHolder models, Models::ID modelID, RigidBodyType::ID pickShape, std::string name);
 		void DestroyEntity(std::string name);
 		void UpdatePickedEntity(std::string name, glm::vec3 & position, glm::vec3 & rotation, glm::vec3 & scale, glm::vec3 & color, bool & picked);
 		void UpdateSystems(double dt);
@@ -37,6 +37,7 @@ namespace px
 		std::shared_ptr<Camera> GetCamera();
 		unsigned int GetEntityCount();
 		EntityManager & GetEntities();
+		Entity GetEntityByName(std::string name);
 
 	private:
 		EntityManager m_entities;
